@@ -4,9 +4,9 @@ Parsigs is an open-source project that aims to extract relevant information from
 
 ## Features
 
-Extracts relevant structured information such as dosage, frequency, brand name from doctors' prescription-sig text.
-Protects patient privacy by not extracting any patient-related information.
-Uses NLP techniques to accurately extract information from unstructured text.
+- Extracts relevant structured information such as dosage, frequency, brand name from doctors' prescription-sig text.
+- Protects patient privacy by not extracting any patient-related information.
+- Uses NLP techniques to accurately extract information from unstructured text.
 
 
 
