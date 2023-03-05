@@ -13,4 +13,5 @@ Parsigs is an open-source project that aims to extract relevant information from
 ## Credits
 This repository is based on code & post - 
 https://odsc.medium.com/training-a-medication-named-entity-recognition-model-from-scratch-with-spacy-e94fdff56022
+
 https://github.com/bpben/spacy_ner_tutorial
