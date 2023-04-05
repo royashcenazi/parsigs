@@ -17,9 +17,13 @@ class StructuredSig():
 
 
 def parse_sig(sig):
-    sig_preprocessed = convert_words_to_numbers(sig.strip().lower())
+    sig_preprocessed = convert_words_to_numbers(sig.lower().replace('/', '.'))
     trained = spacy.load('research/example_model/model-last')
     model_output = trained(sig_preprocessed)
+
+    #DEBUG
+    print([(e, e.label_) for e in model_output.ents])
+
     return create_structured_sig(model_output)
 
 
@@ -59,7 +63,7 @@ def convert_words_to_numbers(sentence):
     return ' '.join(output_words)
 
 def get_frequency_type(frequency):
-    if "day" in frequency:
+    if "day" in frequency or "daily" in frequency:
         return "Day"
     if "week" in frequency:
         return "Week"
@@ -68,10 +72,10 @@ def get_frequency_type(frequency):
     
 def get_interval(frequency): 
     for word in frequency.split():
-        if is_number_word(word):
-            return w2n.word_to_num(word)
+        if word.isdigit():
+            return int(word)
     return 1
 
-
-inp = 'take one tablet of aderol 150mg by mouth every two days for one week'
+# inp = 'TAKE 1 TABLET BY MOUTH 3 TIMES A DAY'
+inp = "TAKE 1 tablet (0.4 MG TOTAL) BY MOUTH DAILY for five months"
 print(parse_sig(inp))
