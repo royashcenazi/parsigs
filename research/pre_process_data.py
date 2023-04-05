@@ -4,7 +4,7 @@ from spacy.tokens import DocBin
 import spacy
 
 # globally picking a subset of labels
-INCL_LABELS = ['Dosage', 'Drug', 'Form', 'Frequency']
+INCL_LABELS = ['Dosage', 'Drug', 'Form', 'Frequency', 'Strength', 'Duration']
 
 def main():
 
@@ -15,18 +15,18 @@ def main():
     # get all ann
     # match ann and txt
     ann_txt = {}
-    for a in input_path.glob('*.ann'):
-        match = list(input_path.glob(f'{a.stem}.txt'))
-        if len(match) > 1:
-            raise ValueError(f'Multiple matches for ann file {a}')
-        elif len(match) == 0:
-            raise ValueError(f'No match for ann file {a}')
-        ann_txt[a] = match[0]
-    for a in ann_txt:
-        txt = ann_txt[a].read_text()
+    for annotation_file in input_path.glob('*.ann'):
+        matched_text = list(input_path.glob(f'{annotation_file.stem}.txt'))
+        if len(matched_text) > 1:
+            raise ValueError(f'Multiple matches for ann file {annotation_file}')
+        elif len(matched_text) == 0:
+            raise ValueError(f'No match for ann file {annotation_file}')
+        ann_txt[annotation_file] = matched_text[0]
+    for text_file in ann_txt:
+        txt = ann_txt[text_file].read_text()
         doc = nlp(txt)
         ents = []
-        for l in a.read_text().split('\n'):
+        for l in text_file.read_text().split('\n'):
             ann = l.split('\t')
             if len(ann) != 3:
                 continue
