@@ -9,9 +9,12 @@ INCL_LABELS = ['Dosage', 'Drug', 'Form', 'Frequency', 'Strength', 'Duration']
 def main():
 
     input_path = pathlib.Path("/Users/royashcenazi/downloads/training_20180910")
-    output_path = pathlib.Path("/Users/royashcenazi/downloads/first_trial.spacy")
+    output_path_train = pathlib.Path("/Users/royashcenazi/downloads/train_docs.spacy")
+    output_path_test = pathlib.Path("/Users/royashcenazi/downloads/test_docs.spacy")
     nlp = spacy.blank("en")
-    doc_bin = DocBin(attrs=["ENT_IOB", "ENT_TYPE"])
+    doc_bin_train = DocBin(attrs=["ENT_IOB", "ENT_TYPE"])
+    doc_bin_test = DocBin(attrs=["ENT_IOB", "ENT_TYPE"])
+    doc_list = []
     # get all ann
     # match ann and txt
     ann_txt = {}
@@ -55,9 +58,21 @@ def main():
         # additionally some overlap, prefers longer spans
         ents_filtered = spacy.util.filter_spans(ents_filtered)
         doc.ents = ents_filtered
-        doc_bin.add(doc)
-    doc_bin.to_disk(output_path)
-    print(f"Processed {len(doc_bin)} documents: {output_path.name}")
+        doc_list.append(doc)
+    
+    # split into train and test
+    train_docs = doc_list[:int(len(doc_list)*0.8)]
+    test_docs = doc_list[int(len(doc_list)*0.8):]
+
+    # add to doc_bin
+    for doc in train_docs:
+        doc_bin_train.add(doc)
+    for doc in test_docs:
+        doc_bin_test.add(doc)
+
+    doc_bin_test.to_disk(output_path_test)
+    doc_bin_train.to_disk(output_path_train)
+    print(f"Processed {len(doc_list)} documents")
 
 
 if __name__ == "__main__":
