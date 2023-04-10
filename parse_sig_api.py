@@ -50,13 +50,10 @@ The input string is pre processed, and than combining static rules and NER model
 
 def parse_sig(sig):
     sig_preprocessed = _pre_process(sig)
-    # Remove extra spaces
-    sig_preprocessed = re.sub(r'\s+', ' ', sig_preprocessed)
     trained = spacy.load('research/example_model2/model-best')
     model_output = trained(sig_preprocessed)
 
-    logging.debug("model output:")
-    logging.debug([(e, e.label_) for e in model_output.ents])
+    logging.debug("model output: ", [(e, e.label_) for e in model_output.ents])
 
     return _create_structured_sig(model_output, sig_preprocessed)
 
@@ -65,6 +62,9 @@ def _pre_process(sig):
     sig = sig.lower().replace('twice', '2 times').replace("once", '1 time')
 
     sig = _add_space_around_parentheses(sig)
+
+    # remove extra spaces between words
+    sig = re.sub(r'\s+', ' ', sig)
 
     output_words = []
     words = sig.split()
@@ -95,7 +95,7 @@ Converts the preprocessed sig using static rules and the model outputs
 def _create_structured_sig(model_output, sig_preprocessed):
     duration_string = _get_duration_string(sig_preprocessed)
     # The initial values using helper methods are only when them model does not detect the entity (otherwise the detected entity is used)
-    dosage, drug, form, freq_type, interval, periodType, periodAmount, strength = _get_single_dose(sig_preprocessed), None, None, None, None, _get_frequency_type(duration_string), _get_interval(duration_string), None
+    dosage, drug, form, freq_type, interval, period_type, period_amount, strength = _get_single_dose(sig_preprocessed), None, None, None, None, _get_frequency_type(duration_string), _get_interval(duration_string), None
     for entity in model_output.ents:
         text = entity.text
         label = entity.label_
@@ -110,11 +110,11 @@ def _create_structured_sig(model_output, sig_preprocessed):
             freq_type = _get_frequency_type(text)
             interval = _get_interval(text)
         if label == 'Duration':
-            periodType = _get_frequency_type(text)
-            periodAmount = _get_interval(text)
+            period_type = _get_frequency_type(text)
+            period_amount = _get_interval(text)
         if label == 'Strength':
             strength = text
-    return StructuredSig(drug, form, strength, freq_type, interval, dosage, periodType, periodAmount)
+    return StructuredSig(drug, form, strength, freq_type, interval, dosage, period_type, period_amount)
 
 
 def _is_number_word(word):
