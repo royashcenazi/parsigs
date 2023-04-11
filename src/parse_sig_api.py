@@ -42,15 +42,19 @@ class StructuredSig:
     periodAmount: int
 
 
+dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
+number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+
+
 """
 Converts a medication dosage instructions string to a StructuredSig object.
 The input string is pre processed, and than combining static rules and NER model outputs, a StructuredSig object is created.
 """
 
 
-def parse_sig(sig):
+def parse_sig(sig, model_path="research/example_model2/model-best"):
     sig_preprocessed = _pre_process(sig)
-    trained = spacy.load('research/example_model2/model-best')
+    trained = spacy.load(model_path)
     model_output = trained(sig_preprocessed)
 
     logging.debug("model output: ", [(e, e.label_) for e in model_output.ents])
@@ -80,9 +84,7 @@ def _pre_process(sig):
 
 
 def _add_space_around_parentheses(s):
-    # Add a space before an opening parenthesis if not already separated by a space
     s = re.sub(r'(?<!\s)\(', r' (', s)
-    # Add a space after a closing parenthesis if not already separated by a space
     s = re.sub(r'\)(?!\s)', r') ', s)
     return s
 
@@ -95,7 +97,10 @@ Converts the preprocessed sig using static rules and the model outputs
 def _create_structured_sig(model_output, sig_preprocessed):
     duration_string = _get_duration_string(sig_preprocessed)
     # The initial values using helper methods are only when them model does not detect the entity (otherwise the detected entity is used)
-    dosage, drug, form, freq_type, interval, period_type, period_amount, strength = _get_single_dose(sig_preprocessed), None, None, None, None, _get_frequency_type(duration_string), _get_interval(duration_string), None
+    dosage, drug, form, freq_type, interval, period_type, period_amount, strength = \
+        _get_single_dose(sig_preprocessed), None, None, None, None, _get_frequency_type(duration_string), \
+        _get_interval(duration_string), None
+
     for entity in model_output.ents:
         text = entity.text
         label = entity.label_
@@ -118,7 +123,6 @@ def _create_structured_sig(model_output, sig_preprocessed):
 
 
 def _is_number_word(word):
-    number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
     return word in number_words
 
 
@@ -161,8 +165,7 @@ def _convert_words_to_numbers(sentence):
 def _get_single_dose(sig):
 
     def is_followed_by_number(word):
-        dose_istructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
-        return word in dose_istructions
+        return word in dose_instructions
 
     words = sig.split()
     if is_followed_by_number(words[0]) and len(words) > 1 and _is_str_float(words[1]):
@@ -181,18 +184,12 @@ def _is_str_float(s):
 
 def _get_frequency_type(frequency):
     if frequency is not None:
-        if "day" in frequency or "daily" in frequency:
+        if any(daily_instruction in frequency for daily_instruction in ("day", "daily", "night", "morning", "noon")):
             return "Day"
         if "week" in frequency:
             return "Week"
         if "month" in frequency:
             return "Month"
-        if "night" in frequency:
-            return "Day"
-        if "morning" in frequency:
-            return "Day"
-        if "noon" in frequency:
-            return "Day"
 
 
 def _get_interval(frequency):
