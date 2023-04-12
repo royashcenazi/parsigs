@@ -6,10 +6,11 @@ from word2number import w2n
 from dataclasses import dataclass
 import re
 import logging
-import os
 
 # TODO handle multiple instructions in one sentence
-
+# TODO convert form to singular if plural using Spacy
+# TODO github workflow to run unit tests
+# TODO Create Pypi distribution
 """
 Represents a structured medication dosage instructions.
 Attributes:
@@ -40,7 +41,7 @@ class StructuredSig:
     strength: str
     frequencyType: str
     interval: int
-    singleDosageAmount: int
+    singleDosageAmount: float
     periodType: str
     periodAmount: int
 
@@ -55,7 +56,7 @@ The input string is pre processed, and than combining static rules and NER model
 """
 
 
-def parse_sig(sig, model_path="{}/research/example_model2/model-best".format(sys.path[0])):
+def parse_sig(sig, model_path="{}/research/example_model/model-best".format(sys.path[0])):
 
     sig_preprocessed = _pre_process(sig)
     trained = spacy.load(model_path)
@@ -109,7 +110,7 @@ def _create_structured_sig(model_output, sig_preprocessed):
         text = entity.text
         label = entity.label_
         if label == 'Dosage' and text.split()[0].isnumeric():
-            dosage = text.split()[0]
+            dosage = float(text.split()[0])
             freq_type = _get_frequency_type(text)
         if label == 'Drug':
             drug = text
@@ -173,7 +174,7 @@ def _get_single_dose(sig):
 
     words = sig.split()
     if is_followed_by_number(words[0]) and len(words) > 1 and _is_str_float(words[1]):
-        return str(float(words[1]))
+        return float(words[1])
 
     return None
 
