@@ -1,9 +1,12 @@
+import sys
+
 from spacy.cli.train import train
 import spacy
 from word2number import w2n
 from dataclasses import dataclass
 import re
 import logging
+import os
 
 # TODO handle multiple instructions in one sentence
 
@@ -52,7 +55,8 @@ The input string is pre processed, and than combining static rules and NER model
 """
 
 
-def parse_sig(sig, model_path="research/example_model2/model-best"):
+def parse_sig(sig, model_path="{}/research/example_model2/model-best".format(sys.path[0])):
+
     sig_preprocessed = _pre_process(sig)
     trained = spacy.load(model_path)
     model_output = trained(sig_preprocessed)

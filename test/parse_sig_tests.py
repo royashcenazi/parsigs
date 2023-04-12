@@ -1,13 +1,13 @@
 import unittest
 
-from src.parse_sig_api import StructuredSig, parse_sig
+from parsigs.parse_sig_api import StructuredSig, parse_sig
 
 
 class ParseSigApiTest(unittest.TestCase):
     def test_parse_sig_basic(self):
         sig = "Take 1 tablet of ibuprofen 3 times a day"
         expected = StructuredSig(drug="ibuprofen", form="tablet", strength=None, frequencyType="Day", interval=3, singleDosageAmount=1, periodType=None, periodAmount=None)
-        result = parse_sig(sig, "../research/example_model2/model-best")
+        result = parse_sig(sig)
         self.assertEqual(result, expected)
 
     def test_parse_sig_strength(self):
