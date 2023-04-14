@@ -57,7 +57,7 @@ The input string is pre processed, and than combining static rules and NER model
 """
 
 
-def parse_sig(sig, model_path="{}/research/example_model/model-best".format(sys.path[0])):
+def parse_sig(sig, model_path="{}/research/sig_ner_model/model-best".format(sys.path[0])):
 
     sig_preprocessed = _pre_process(sig)
     trained = spacy.load(model_path)
