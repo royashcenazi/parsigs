@@ -11,6 +11,8 @@ import logging
 # TODO convert form to singular if plural using Spacy
 # TODO github workflow to run unit tests
 # TODO Create Pypi distribution
+# TODO add as_needed flag
+
 """
 Represents a structured medication dosage instructions.
 Attributes:
@@ -62,7 +64,7 @@ def parse_sig(sig, model_path="{}/research/example_model/model-best".format(sys.
     trained = spacy.load(model_path)
     model_output = trained(sig_preprocessed)
 
-    logging.debug("model output: ", [(e, e.label_) for e in model_output.ents])
+    print("model output: ", [(e, e.label_) for e in model_output.ents])
 
     return _create_structured_sig(model_output, sig_preprocessed)
 
@@ -79,7 +81,7 @@ def _pre_process(sig):
     words = sig.split()
     for word in words:
         if word == 'tab':
-            output_words = word.replace('tab', 'tablet')
+            word = word.replace('tab', 'tablet')
         else:
             output_words.append(word)
     sig = ' '.join(output_words)
@@ -189,12 +191,14 @@ def _is_str_float(s):
 
 def _get_frequency_type(frequency):
     if frequency is not None:
-        if any(daily_instruction in frequency for daily_instruction in ("day", "daily", "night", "morning", "noon")):
-            return "Day"
+        if "hour" in frequency:
+            return "Hour"
         if "week" in frequency:
             return "Week"
         if "month" in frequency:
             return "Month"
+        if any(daily_instruction in frequency for daily_instruction in ("day", "daily", "night", "morning", "noon", "bedtime")):
+            return "Day"
 
 
 def _get_interval(frequency):
