@@ -1,0 +1,2 @@
+spacy
+word2number

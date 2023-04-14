@@ -1,6 +1,5 @@
 import sys
 
-from spacy.cli.train import train
 import spacy
 from word2number import w2n
 from dataclasses import dataclass
