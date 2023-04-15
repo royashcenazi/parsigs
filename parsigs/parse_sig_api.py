@@ -5,6 +5,8 @@ from word2number import w2n
 from dataclasses import dataclass
 import re
 import logging
+from spacy import Language
+
 
 # TODO handle multiple instructions in one sentence
 # TODO convert form to singular if plural using Spacy
@@ -50,6 +52,7 @@ class StructuredSig:
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
+default_model_path = "{}/research/sig_ner_model/model-best".format(sys.path[0])
 
 """
 Converts a medication dosage instructions string to a StructuredSig object.
@@ -57,13 +60,21 @@ The input string is pre processed, and than combining static rules and NER model
 """
 
 
-def parse_sig(sig, model_path="{}/research/sig_ner_model/model-best".format(sys.path[0])):
+def parse_sig(sig: str, model_path=default_model_path):
+    model = spacy.load(model_path)
+    return _parse_sig(sig, model)
 
+
+def parse_sigs(sig_lst: list[str], model_path=default_model_path):
+    model = spacy.load(model_path)
+    return list(map(lambda sig: _parse_sig(sig, model), sig_lst))
+
+
+def _parse_sig(sig: str, model: Language):
     sig_preprocessed = _pre_process(sig)
-    trained = spacy.load(model_path)
-    model_output = trained(sig_preprocessed)
+    model_output = model(sig_preprocessed)
 
-    print("model output: ", [(e, e.label_) for e in model_output.ents])
+    logging.debug("model output: ", [(e, e.label_) for e in model_output.ents])
 
     return _create_structured_sig(model_output, sig_preprocessed)
 
@@ -107,7 +118,9 @@ def _create_structured_sig(model_output, sig_preprocessed):
         _get_single_dose(sig_preprocessed), None, None, None, None, _get_frequency_type(duration_string), \
         _get_interval(duration_string), None
 
-    for entity in model_output.ents:
+    entities = _get_model_entities(model_output)
+
+    for entity in entities:
         text = entity.text
         label = entity.label_
         if label == 'Dosage' and text.split()[0].isnumeric():
@@ -128,6 +141,17 @@ def _create_structured_sig(model_output, sig_preprocessed):
     return StructuredSig(drug, form, strength, freq_type, interval, dosage, period_type, period_amount)
 
 
+"""
+There is a known issue where the model wrongly tag sometimes frequency as dosage signatures, this is a current fix
+as the last tag should not be dosage instruction, remove this once training data is fixed to handle such issue
+"""
+
+
+def _get_model_entities(model_output):
+    entities = model_output.ents
+    if entities[-1].label_ == "Dosage":
+        entities[-1].label_ = "Frequency"
+    return entities
 def _is_number_word(word):
     return word in number_words
 
