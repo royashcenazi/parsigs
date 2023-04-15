@@ -65,7 +65,7 @@ def parse_sig(sig: str, model_path=default_model_path):
     return _parse_sig(sig, model)
 
 
-def parse_sigs(sig_lst: list[str], model_path=default_model_path):
+def parse_sigs(sig_lst, model_path=default_model_path):
     model = spacy.load(model_path)
     return list(map(lambda sig: _parse_sig(sig, model), sig_lst))
 
