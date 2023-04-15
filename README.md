@@ -28,8 +28,6 @@ expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType
 
 ```
 
-In this example, we're parsing the medication instruction string `"Take 1 tablet of ibuprofen 200mg 3 times every day for three weeks"` using the parse_sig method. The expected output is a StructuredSig object representing the parsed instruction, with the values specified in the expected variable.
-
 The `StructuredSig` object has the following attributes:
 
 * `drug`: the name of the drug
