@@ -10,7 +10,7 @@ Parsigs is an open-source project that aims to extract relevant information from
 
 
 ## Usage
-Here's some examples of how to use the parse_sig method:
+Here are some examples of how to use the parse_sig method:
 
 
 ```
@@ -37,9 +37,9 @@ The `StructuredSig` object has the following attributes:
 * `interval`: the number of times per frequency time-unit
 * `singleDosageAmount`: the amount of the medication to take at each interval
 * `periodType`: the unit-type of the period which indicates for how long medication should be taken (e.g. Day, Week, Month)
-* `periodAmount`: the number of units per periodType 
+* `periodAmount`: the number of units per `periodType` 
 
-If you encounter any issues or have any questions, please don't hesitate to send my an email or file an issue.
+If you encounter any issues or have any questions, please don't hesitate to send me an email or file an issue.
 
 
 ## Credits
