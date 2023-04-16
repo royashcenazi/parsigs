@@ -43,8 +43,11 @@ The `StructuredSig` object has the following attributes:
 
 ## Known Issues
 
-The parse-sig module is developed to use the *Named Entity Recognition* model for tagging different parts in a dosage instruction sentence {Duration, Frequency, Dosage, Drug, Form}. The different tags are than static rules. One should expect some level of errors as the model was trained on a large but limited data, as aquiring this
-type of data for it being private is a task of itself. I do intend to add a Dev set in the future and also more examples other than the ones in the test module. 
+The parse-sig module is developed to use the *Named Entity Recognition* model for tagging different parts in a dosage instruction sentence (Duration, Frequency, Dosage, Drug, Form). The different tags are than being processed by static rules.
+You should expect some level of errors as the model was trained on a large but limited data, as aquiring this
+type of data for it being private is a task of itself.
+I do intend to add a Dev set in the future and also more examples other than the ones in the test module. 
+
 The main target of the project is to identify and structure dosage instructions, as most prescriptions contain the brand name as a part of the definition, it is less
 important to structure it than the frequency, dosage and period so expect that part to work not as good as dosage instructions identification (this data is often not provided in the Sig, e.g `"Take 1 tablet every day"`)
 
