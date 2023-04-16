@@ -38,7 +38,7 @@ The `StructuredSig` object has the following attributes:
 * `singleDosageAmount`: the amount of the medication to take at each interval
 * `periodType`: the unit-type of the period which indicates for how long medication should be taken (e.g. Day, Week, Month)
 * `periodAmount`: the number of units per `periodType` 
-
+* `takeAsNeeded`: a flag indicating if the instructed dosage should be taken only when the patient needs it 
 
 
 ## Known Issues
