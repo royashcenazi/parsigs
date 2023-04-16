@@ -34,6 +34,8 @@ periodType : str
     The type of period for the dosage (e.g. Hour, Day, Week, Month).
 periodAmount : int
     The duration of the period for the dosage (e.g. 7 days, 2 months, etc.).
+take_as_needed : bool
+    Some instructions contains a statement that the medication should be taken as needed by patient
 """
 
 
@@ -47,12 +49,13 @@ class StructuredSig:
     singleDosageAmount: float
     periodType: str
     periodAmount: int
+    take_as_needed: bool
 
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
-default_model_path = "{}/research/sig_ner_model/model-best".format(sys.path[0])
+default_model_path = "{}/research/sig_ner_model/model-last".format(sys.path[0])
 
 """
 Converts a medication dosage instructions string to a StructuredSig object.
@@ -80,7 +83,7 @@ def _parse_sig(sig: str, model: Language):
 
 
 def _pre_process(sig):
-    sig = sig.lower().replace('twice', '2 times').replace("once", '1 time')
+    sig = sig.lower().replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
 
     sig = _add_space_around_parentheses(sig)
 
@@ -92,6 +95,7 @@ def _pre_process(sig):
     for word in words:
         if word == 'tab':
             word = word.replace('tab', 'tablet')
+            output_words.append(word)
         else:
             output_words.append(word)
     sig = ' '.join(output_words)
@@ -114,9 +118,9 @@ Converts the preprocessed sig using static rules and the model outputs
 def _create_structured_sig(model_output, sig_preprocessed):
     duration_string = _get_duration_string(sig_preprocessed)
     # The initial values using helper methods are only when them model does not detect the entity (otherwise the detected entity is used)
-    dosage, drug, form, freq_type, interval, period_type, period_amount, strength = \
+    dosage, drug, form, freq_type, interval, period_type, period_amount, strength, take_as_needed = \
         _get_single_dose(sig_preprocessed), None, None, None, None, _get_frequency_type(duration_string), \
-        _get_interval(duration_string), None
+        _get_interval(duration_string), None, False
 
     entities = _get_model_entities(model_output)
 
@@ -133,12 +137,16 @@ def _create_structured_sig(model_output, sig_preprocessed):
         if label == 'Frequency':
             freq_type = _get_frequency_type(text)
             interval = _get_interval(text)
+            # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
+            if interval is None:
+                interval = 1
+            take_as_needed = _should_take_as_needed(text)
         if label == 'Duration':
             period_type = _get_frequency_type(text)
             period_amount = _get_interval(text)
         if label == 'Strength':
             strength = text
-    return StructuredSig(drug, form, strength, freq_type, interval, dosage, period_type, period_amount)
+    return StructuredSig(drug, form, strength, freq_type, interval, dosage, period_type, period_amount, take_as_needed)
 
 
 """
@@ -149,9 +157,11 @@ as the last tag should not be dosage instruction, remove this once training data
 
 def _get_model_entities(model_output):
     entities = model_output.ents
-    if entities[-1].label_ == "Dosage":
+    if len(entities) > 0 and entities[-1].label_ == "Dosage":
         entities[-1].label_ = "Frequency"
     return entities
+
+
 def _is_number_word(word):
     return word in number_words
 
@@ -220,7 +230,7 @@ def _get_frequency_type(frequency):
             return "Week"
         if "month" in frequency:
             return "Month"
-        if any(daily_instruction in frequency for daily_instruction in ("day", "daily", "night", "morning", "noon", "bedtime")):
+        if any(daily_instruction in frequency for daily_instruction in ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
             return "Day"
 
 
@@ -229,6 +239,10 @@ def _get_interval(frequency):
         for word in frequency.split():
             if word.isdigit():
                 return int(word)
-        return 1
+        # every other TIME_UNIT means every 2 days,weeks etc
+        if "other" in frequency:
+            return 2
 
 
+def _should_take_as_needed(frequency):
+    return "as needed" in frequency

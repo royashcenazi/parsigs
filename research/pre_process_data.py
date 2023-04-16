@@ -61,8 +61,8 @@ def main():
         doc_list.append(doc)
     
     # split into train and test
-    train_docs = doc_list[:int(len(doc_list)*0.8)]
-    test_docs = doc_list[int(len(doc_list)*0.8):]
+    train_docs = doc_list[:int(len(doc_list)*0.9)]
+    test_docs = doc_list[int(len(doc_list)*0.9):]
 
     # add to doc_bin
     for doc in train_docs:

@@ -7,6 +7,6 @@ from parsigs.parse_sig_api import parse_sig
 
 # inp1 = "Take 50 mcg of eltroxin 5 times a week and than take 100 mcg twice a week"
 
-inp1 = "Instill one drop into affected eye twice a day beginning the afternoon of surgery, continue for 30 days after surgery then discontinue"
+inp1 = "Use one drop in right eye 4 times daily beginning 2 days before surgery"
 
 print(parse_sig(inp1))
