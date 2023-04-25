@@ -19,12 +19,12 @@ from parsigs.parse_sig_api import StructuredSig, parse_sig
 sig = "Take 1 tablet of ibuprofen 200mg 3 times every day for 3 weeks"
 parsed_sig = parse_sig(sig)
 
-expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=3, takeAsNeeded=False)
+expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=3)
 
 sig2 = "Take 2 tablets 3 times every month"
 parsed_sig = parse_sig(sig)
 
-expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Month', interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Month', interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded = False)
 
 ```
 

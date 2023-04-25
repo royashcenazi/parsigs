@@ -8,9 +8,9 @@ INCL_LABELS = ['Dosage', 'Drug', 'Form', 'Frequency', 'Strength', 'Duration']
 
 def main():
 
-    input_path = pathlib.Path("/Users/royashcenazi/downloads/training_20180910")
-    output_path_train = pathlib.Path("/Users/royashcenazi/downloads/train_docs.spacy")
-    output_path_test = pathlib.Path("/Users/royashcenazi/downloads/test_docs.spacy")
+    input_path = pathlib.Path("training_20180910")
+    output_path_train = pathlib.Path("train_docs.spacy")
+    output_path_test = pathlib.Path("test_docs.spacy")
     nlp = spacy.blank("en")
     doc_bin_train = DocBin(attrs=["ENT_IOB", "ENT_TYPE"])
     doc_bin_test = DocBin(attrs=["ENT_IOB", "ENT_TYPE"])
