@@ -19,12 +19,12 @@ from parsigs.parse_sig_api import StructuredSig, parse_sig
 sig = "Take 1 tablet of ibuprofen 200mg 3 times every day for 3 weeks"
 parsed_sig = parse_sig(sig)
 
-expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=3)
+expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=3, takeAsNeeded=False)
 
 sig2 = "Take 2 tablets 3 times every month"
 parsed_sig = parse_sig(sig)
 
-expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Month', interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None)
+expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Month', interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
 
 ```
 
@@ -49,8 +49,7 @@ You should expect some amount of errors as the model was trained on a large but 
 type of data for it being private is a task of itself.
 I do intend to add a Dev set in the future and also more examples other than the ones in the test module. 
 
-The main target of the project is to identify and structure dosage instructions, as most prescriptions contain the brand name as a part of the definition, it is less
-important to structure it than the frequency, dosage and period so expect that part to work not as good as dosage instructions identification (this data is often not provided in the Sig, e.g `"Take 1 tablet every day"`)
+The main target of the project is to identify and structure dosage instructions, as most prescriptions contain the brand name as a part of the definition, it is less important to structure it than the frequency, dosage and period so expect that part not be as complete as dosage instructions identification (this data is often not provided in the Sig, e.g `"Take 1 tablet every day"`)
 
 If you encounter any more issues or have any questions, please don't hesitate to send me an email or file an issue.
 

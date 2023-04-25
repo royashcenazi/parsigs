@@ -7,12 +7,9 @@ import re
 import logging
 from spacy import Language
 
-
 # TODO handle multiple instructions in one sentence
 # TODO convert form to singular if plural using Spacy
-# TODO github workflow to run unit tests
 # TODO Create Pypi distribution
-# TODO add as_needed flag
 
 """
 Represents a structured medication dosage instructions.
@@ -34,7 +31,7 @@ periodType : str
     The type of period for the dosage (e.g. Hour, Day, Week, Month).
 periodAmount : int
     The duration of the period for the dosage (e.g. 7 days, 2 months, etc.).
-take_as_needed : bool
+takeAsNeeded : bool
     Some instructions contains a statement that the medication should be taken as needed by patient
 """
 
@@ -49,13 +46,24 @@ class StructuredSig:
     singleDosageAmount: float
     periodType: str
     periodAmount: int
-    take_as_needed: bool
+    takeAsNeeded: bool
 
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
-default_model_path = "{}/research/sig_ner_model/model-last".format(sys.path[0])
+
+@dataclass(frozen=True, eq=True)
+class _Frequency:
+    frequencyType: str
+    interval: int
+
+
+# TODO add qXd support
+latin_frequency_types = {"qd": _Frequency("Day", 1), "bid": _Frequency("Day", 2), "tid": _Frequency("Day", 3),
+                         "qid": _Frequency("Day", 4)}
+
+default_model_path = "{}/research/sig_bert_model/model-best".format(sys.path[0])
 
 """
 Converts a medication dosage instructions string to a StructuredSig object.
@@ -149,16 +157,8 @@ def _create_structured_sig(model_output, sig_preprocessed):
     return StructuredSig(drug, form, strength, freq_type, interval, dosage, period_type, period_amount, take_as_needed)
 
 
-"""
-There is a known issue where the model wrongly tag sometimes frequency as dosage signatures, this is a current fix
-as the last tag should not be dosage instruction, remove this once training data is fixed to handle such issue
-"""
-
-
 def _get_model_entities(model_output):
     entities = model_output.ents
-    if len(entities) > 0 and entities[-1].label_ == "Dosage":
-        entities[-1].label_ = "Frequency"
     return entities
 
 
@@ -175,7 +175,6 @@ def _get_duration_string(sig):
 
 
 def _convert_fract_to_num(sentence):
-
     def is_frac(_word):
         nums = _word.split('/')
         return len(nums) == 2 and '/' in _word and nums[0].isdigit() and nums[1].isdigit()
@@ -185,7 +184,7 @@ def _convert_fract_to_num(sentence):
     for word in words:
         if is_frac(word):
             num, denom = word.split('/')
-            output_words.append(str(int(num)/int(denom)))
+            output_words.append(str(int(num) / int(denom)))
         else:
             output_words.append(word)
     return ' '.join(output_words)
@@ -203,7 +202,6 @@ def _convert_words_to_numbers(sentence):
 
 
 def _get_single_dose(sig):
-
     def is_followed_by_number(word):
         return word in dose_instructions
 
@@ -230,8 +228,12 @@ def _get_frequency_type(frequency):
             return "Week"
         if "month" in frequency:
             return "Month"
-        if any(daily_instruction in frequency for daily_instruction in ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
+        if any(daily_instruction in frequency for daily_instruction in
+               ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
             return "Day"
+        latin_freq = _get_latin_frequency(frequency)
+        if latin_freq:
+            return latin_freq.frequencyType
 
 
 def _get_interval(frequency):
@@ -242,6 +244,15 @@ def _get_interval(frequency):
         # every other TIME_UNIT means every 2 days,weeks etc
         if "other" in frequency:
             return 2
+        latin_freq = _get_latin_frequency(frequency)
+        if latin_freq:
+            return latin_freq.interval
+
+
+def _get_latin_frequency(frequency):
+    for latin_freq in latin_frequency_types.keys():
+        if latin_freq in frequency:
+            return latin_frequency_types[latin_freq]
 
 
 def _should_take_as_needed(frequency):
