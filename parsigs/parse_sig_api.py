@@ -70,13 +70,7 @@ The input string is pre processed, and than combining static rules and NER model
 """
 
 
-def parse_sig(sig: str, model_name=default_model_name):
-    model = spacy.load(model_name)
-    return _parse_sig(sig, model)
-
-
-def parse_sigs(sig_lst, model_name=default_model_name):
-    model = spacy.load(model_name)
+def _parse_sigs(sig_lst, model: Language):
     return list(map(lambda sig: _parse_sig(sig, model), sig_lst))
 
 
@@ -256,3 +250,15 @@ def _get_latin_frequency(frequency):
 
 def _should_take_as_needed(frequency):
     return "as needed" in frequency
+
+
+class SigParser:
+    def __init__(self, model_name="en_parsigs"):
+        self.__language = spacy.load(model_name)
+
+    def parse(self, sig: str):
+        return _parse_sig(sig, self.__language)
+
+    def parse_many(self, sigs: list):
+        return _parse_sigs(sigs, self.__language)
+

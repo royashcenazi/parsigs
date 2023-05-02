@@ -14,15 +14,17 @@ Here are some examples of how to use the parse_sig method:
 
 
 ```
-from parsigs.parse_sig_api import StructuredSig, parse_sig
+from parsigs.parse_sig_api import StructuredSig, SigParser
+
+sig_parser = SigParser()
 
 sig = "Take 1 tablet of ibuprofen 200mg 3 times every day for 3 weeks"
-parsed_sig = parse_sig(sig)
+parsed_sig = sig_parser.parse(sig)
 
 expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=3)
 
 sig2 = "Take 2 tablets 3 times every month"
-parsed_sig = parse_sig(sig)
+parsed_sig = sig_parser.parse(sig)
 
 expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Month', interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded = False)
 
