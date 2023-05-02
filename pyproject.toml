@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "parsigs"
+version = "0.0.2_beta"
+authors = [
+    { name = "Roy Ashcenazi", email = "royashcenazi@gmail.com" },
+]
+description = "The private, smart and easy Sig (Dosage Instructions) text-parser"
+readme = "README.md"
+dependencies = [
+    "spacy",
+    "word2number"
+]
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/royashcenazi/parsigs"
+"Bug Tracker" = "https://github.com/royashcenazi/parsigs/issues"

@@ -60,7 +60,7 @@ def main():
         doc.ents = ents_filtered
         doc_list.append(doc)
     
-    # split into train and test
+    # split into train and tests
     train_docs = doc_list[:int(len(doc_list)*0.9)]
     test_docs = doc_list[int(len(doc_list)*0.9):]
 

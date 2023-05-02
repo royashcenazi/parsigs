@@ -52,6 +52,7 @@ class StructuredSig:
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
+default_model_name = "en_parsigs"
 
 @dataclass(frozen=True, eq=True)
 class _Frequency:
@@ -69,13 +70,13 @@ The input string is pre processed, and than combining static rules and NER model
 """
 
 
-def parse_sig(sig: str, model_path="en_parsigs"):
-    model = spacy.load(model_path)
+def parse_sig(sig: str, model_name=default_model_name):
+    model = spacy.load(model_name)
     return _parse_sig(sig, model)
 
 
-def parse_sigs(sig_lst, model_path):
-    model = spacy.load(model_path)
+def parse_sigs(sig_lst, model_name=default_model_name):
+    model = spacy.load(model_name)
     return list(map(lambda sig: _parse_sig(sig, model), sig_lst))
 
 
