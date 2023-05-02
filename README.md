@@ -9,6 +9,16 @@ Parsigs is an open-source project that aims to extract relevant information from
 - Uses NLP techniques to accurately extract information from unstructured text.
 
 
+## Installation
+For optimal usage, you will need to install the `parsigs` package and the underlying model
+(you can provide a different one by yourself, but this is not 
+recommended as the model was trained for the specific task of parsing dosage instructions from Sigs)
+```
+pip install parsigs
+pip install https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl
+```
+
+
 ## Usage
 Here are some examples of how to use the parse_sig method:
 
