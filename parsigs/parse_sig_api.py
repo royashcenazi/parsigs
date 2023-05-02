@@ -63,20 +63,18 @@ class _Frequency:
 latin_frequency_types = {"qd": _Frequency("Day", 1), "bid": _Frequency("Day", 2), "tid": _Frequency("Day", 3),
                          "qid": _Frequency("Day", 4)}
 
-default_model_path = "{}/research/sig_bert_model/model-best".format(sys.path[0])
-
 """
 Converts a medication dosage instructions string to a StructuredSig object.
 The input string is pre processed, and than combining static rules and NER model outputs, a StructuredSig object is created.
 """
 
 
-def parse_sig(sig: str, model_path=default_model_path):
+def parse_sig(sig: str, model_path="en_parsigs"):
     model = spacy.load(model_path)
     return _parse_sig(sig, model)
 
 
-def parse_sigs(sig_lst, model_path=default_model_path):
+def parse_sigs(sig_lst, model_path):
     model = spacy.load(model_path)
     return list(map(lambda sig: _parse_sig(sig, model), sig_lst))
 
