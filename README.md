@@ -15,7 +15,6 @@ For optimal usage, you will need to install the `parsigs` package and the underl
 recommended as the model was trained for the specific task of parsing dosage instructions from Sigs)
 ```
 pip install parsigs
-pip install https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl
 ```
 
 

@@ -1,2 +1,3 @@
-spacy
+spacy>=3.0,<4.0
 word2number
+en-parsigs @ https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl

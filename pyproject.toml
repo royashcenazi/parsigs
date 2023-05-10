@@ -4,16 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "parsigs"
-version = "0.0.3_beta"
+version = "0.0.6_beta"
 authors = [
     { name = "Roy Ashcenazi", email = "royashcenazi@gmail.com" },
 ]
 description = "The private, smart and easy Sig (Dosage Instructions) text-parser"
 readme = "README.md"
+
 dependencies = [
-    "spacy",
-    "word2number"
+    "spacy>=3.0,<4.0",
+    "word2number",
+#    "en-parsigs @ https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl",
 ]
+
+[tool.hatch.metadata]
+#allow-direct-references = true
+
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
