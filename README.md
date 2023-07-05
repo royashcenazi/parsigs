@@ -2,6 +2,9 @@
 
 Parsigs is an open-source project that aims to extract relevant information from doctors' signature text without compromising privacy and PHI (Protected Health Information) using Natural Language Processing.
 
+# CALL FOR CONTRIBUTORS
+If you'd like to participate in the development and maintenance of this plugin, please open a PR or an issue. Help is welcome. Thanks to all who have contributed so far!
+
 ## Features
 
 - Extracts relevant structured information such as dosage, frequency, drug name from doctors' prescription-sig text.
