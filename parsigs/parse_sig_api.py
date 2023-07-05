@@ -50,7 +50,7 @@ class StructuredSig:
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-stemmer = SigTermsStemmer()
+sig_stemmer = SigTermsStemmer()
 default_model_name = "en_parsigs"
 
 @dataclass(frozen=True, eq=True)
@@ -141,7 +141,7 @@ def complete_sig_with_entities(model_entities, sig):
         if label == 'Drug':
             sig.drug = text
         if label == 'Form':
-            sig.form = stemmer.stem(text)
+            sig.form = sig_stemmer.stem(text)
         if label == 'Frequency':
             sig.frequencyType = _get_frequency_type(text)
             sig.interval = _get_interval(text)
