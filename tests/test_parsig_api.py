@@ -20,7 +20,7 @@ class TestParseSigApi(unittest.TestCase):
 
     def test_parse_sig_period(self):
         sig = "Take 2 tabs of amoxicillin 500mg every 12 days for 10 days"
-        expected = StructuredSig(drug="amoxicillin", form="tabs", strength="500mg", frequencyType="Day", interval=12, singleDosageAmount=2.0, periodType="Day", periodAmount=10, takeAsNeeded=False)
+        expected = StructuredSig(drug="amoxicillin", form="tab", strength="500mg", frequencyType="Day", interval=12, singleDosageAmount=2.0, periodType="Day", periodAmount=10, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)
 
@@ -32,13 +32,13 @@ class TestParseSigApi(unittest.TestCase):
 
     def test_parse_sig_text_and_regular_numbers(self):
         sig = "Take two tablets of ibuprofen 3 times every week"
-        expected = StructuredSig(drug='ibuprofen', form='tablets', strength=None, frequencyType="Week", interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        expected = StructuredSig(drug='ibuprofen', form='tablet', strength=None, frequencyType="Week", interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)
 
     def test_unprocessed_sig(self):
         sig = "INHALE 2 puffs EVERY DAY"
-        expected = StructuredSig(drug=None, form='puffs', strength=None, frequencyType="Day", interval=1, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        expected = StructuredSig(drug=None, form='puff', strength=None, frequencyType="Day", interval=1, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)
 
@@ -74,6 +74,6 @@ class TestParseSigApi(unittest.TestCase):
 
     def test_parse_sig_capsules(self):
         sig = "Take 2 capsules of amoxicillin 500mg"
-        expected = StructuredSig(drug="amoxicillin", form="capsules", strength="500mg", frequencyType=None, interval=None, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        expected = StructuredSig(drug="amoxicillin", form="capsule", strength="500mg", frequencyType=None, interval=None, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)

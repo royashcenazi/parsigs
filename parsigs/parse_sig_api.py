@@ -1,6 +1,7 @@
 import sys
 
 import spacy
+import inflect
 from word2number import w2n
 from dataclasses import dataclass
 import re
@@ -8,7 +9,6 @@ import logging
 from spacy import Language
 
 # TODO handle multiple instructions in one sentence
-# TODO convert form to singular if plural using Spacy
 # TODO Create Pypi distribution
 
 """
@@ -126,10 +126,10 @@ def _create_structured_sig(model_output, sig_preprocessed):
     static_sig = StructuredSig(drug=None, form=None, strength=None, singleDosageAmount=dosage, frequencyType=None,
                                interval=None, periodType=period_type, periodAmount=period_amount,
                                takeAsNeeded=take_as_needed)
-
     entities = _get_model_entities(model_output)
 
     return complete_sig_with_entities(entities, static_sig)
+
 
 
 def complete_sig_with_entities(model_entities, sig):
@@ -142,7 +142,9 @@ def complete_sig_with_entities(model_entities, sig):
         if label == 'Drug':
             sig.drug = text
         if label == 'Form':
-            sig.form = text
+            # turn form to singular if plural else keep as is
+            singular = inflect.engine().singular_noun(text)
+            sig.form = singular if singular else text
         if label == 'Frequency':
             sig.frequencyType = _get_frequency_type(text)
             sig.interval = _get_interval(text)
