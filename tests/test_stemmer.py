@@ -1,9 +1,8 @@
 import unittest
-from krovetzstemmer import Stemmer
-
+from parsigs.sig_terms_stemmer import SigTermsStemmer
 class TestStemmer(unittest.TestCase):
     def test_stemmer(self):
-        stemmer = Stemmer()
+        stemmer = SigTermsStemmer()
         self.assertEqual(stemmer.stem("tablets"), "tablet")
         self.assertEqual(stemmer.stem("puffs"), "puff")
         self.assertEqual(stemmer.stem("parties"), "party")

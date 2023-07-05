@@ -6,10 +6,8 @@ from dataclasses import dataclass
 import re
 import logging
 from spacy import Language
-from krovetzstemmer import Stemmer
-
+from parsigs.sig_terms_stemmer import SigTermsStemmer
 # TODO handle multiple instructions in one sentence
-# TODO convert form to singular if plural using Spacy
 # TODO Create Pypi distribution
 
 """
@@ -52,7 +50,7 @@ class StructuredSig:
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-stemmer = Stemmer()
+stemmer = SigTermsStemmer()
 default_model_name = "en_parsigs"
 
 @dataclass(frozen=True, eq=True)
@@ -271,11 +269,4 @@ class SigParser:
     def parse_many(self, sigs: list):
         return _parse_sigs(sigs, self.__language)
 
-# class EnhancedStemmer(Stemmer):
-#     def __init__(self):
-#
-#         self.__overrides = {"drops":"drop"}
-#     def stem(self, *args, **kwargs):
-#         term = self.__overrides.get(*args[0])
-#         if term is None:
-#             return Stemmer.stem(self,*args,**kwargs)
+
