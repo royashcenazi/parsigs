@@ -19,7 +19,10 @@ recommended as the model was trained for the specific task of parsing dosage ins
 ```
 pip install parsigs
 ```
-
+In addition, install the parsigs model: 
+```
+pip install https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl
+```
 
 ## Usage
 Here are some examples of how to use the parse_sig method:
@@ -36,7 +39,7 @@ parsed_sig = sig_parser.parse(sig)
 expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=3)
 
 sig2 = "Take 2 tablets 3 times every month"
-parsed_sig = sig_parser.parse(sig)
+parsed_sig = sig_parser.parse(sig2)
 
 expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Month', interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded = False)
 
