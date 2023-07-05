@@ -119,35 +119,43 @@ Converts the preprocessed sig using static rules and the model outputs
 def _create_structured_sig(model_output, sig_preprocessed):
     duration_string = _get_duration_string(sig_preprocessed)
     # The initial values using helper methods are only when them model does not detect the entity (otherwise the detected entity is used)
-    dosage, drug, form, freq_type, interval, period_type, period_amount, strength, take_as_needed = \
-        _get_single_dose(sig_preprocessed), None, None, None, None, _get_frequency_type(duration_string), \
-        _get_interval(duration_string), None, False
+    dosage, period_type, period_amount, take_as_needed = \
+        _get_single_dose(sig_preprocessed), _get_frequency_type(duration_string), \
+        _get_interval(duration_string), False
+
+    static_sig = StructuredSig(drug=None, form=None, strength=None, singleDosageAmount=dosage, frequencyType=None,
+                               interval=None, periodType=period_type, periodAmount=period_amount,
+                               takeAsNeeded=take_as_needed)
 
     entities = _get_model_entities(model_output)
 
-    for entity in entities:
+    return complete_sig_with_entities(entities, static_sig)
+
+
+def complete_sig_with_entities(model_entities, sig):
+    for entity in model_entities:
         text = entity.text
         label = entity.label_
         if label == 'Dosage' and text.split()[0].isnumeric():
-            dosage = float(text.split()[0])
-            freq_type = _get_frequency_type(text)
+            sig.singleDosageAmount = float(text.split()[0])
+            sig.frequencyType = _get_frequency_type(text)
         if label == 'Drug':
-            drug = text
+            sig.drug = text
         if label == 'Form':
-            form = text
+            sig.form = text
         if label == 'Frequency':
-            freq_type = _get_frequency_type(text)
-            interval = _get_interval(text)
+            sig.frequencyType = _get_frequency_type(text)
+            sig.interval = _get_interval(text)
             # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
-            if interval is None:
-                interval = 1
-            take_as_needed = _should_take_as_needed(text)
+            if sig.interval is None:
+                sig.interval = 1
+            sig.takeAsNeeded = _should_take_as_needed(text)
         if label == 'Duration':
-            period_type = _get_frequency_type(text)
-            period_amount = _get_interval(text)
+            sig.periodType = _get_frequency_type(text)
+            sig.periodAmount = _get_interval(text)
         if label == 'Strength':
-            strength = text
-    return StructuredSig(drug, form, strength, freq_type, interval, dosage, period_type, period_amount, take_as_needed)
+            sig.strength = text
+    return sig
 
 
 def _get_model_entities(model_output):

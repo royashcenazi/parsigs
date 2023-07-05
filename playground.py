@@ -9,7 +9,7 @@ from parsigs.parse_sig_api import SigParser
 
 sig_parser = SigParser()
 
-inp1 = "Take 1 aderol first thing in the morning"
+inp1 = "20 mg, Intravenous, at 100 mL/hr, Administer over 30 Minutes, 2 times daily, First dose on Thu 2/19/15 at 1800"
 
 print(sig_parser.parse(inp1))
 

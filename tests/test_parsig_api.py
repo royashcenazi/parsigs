@@ -13,8 +13,8 @@ class TestParseSigApi(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_parse_sig_strength(self):
-        sig = "Take 1 tablet of ibuprofen 200mg 3 times every day"
-        expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        sig = "Take 1 tablet of ibuprofen 200mg 3 times every day for 10 weeks"
+        expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType="Week", periodAmount=10, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)
 
@@ -72,8 +72,8 @@ class TestParseSigApi(unittest.TestCase):
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)
 
-    # def test_parse_sig_capsules(self):
-    #     sig = "Take 2 capsules of amoxicillin 500mg"
-    #     expected = StructuredSig(drug="amoxicillin", form="capsules", strength="500mg", frequencyType=None, interval=None, singleDosageAmount=2.0, periodType=None, periodAmount=None, take_as_needed=False)
-    #     result = parse_sig(sig)
-    #     self.assertEqual(result, expected)
+    def test_parse_sig_capsules(self):
+        sig = "Take 2 capsules of amoxicillin 500mg"
+        expected = StructuredSig(drug="amoxicillin", form="capsules", strength="500mg", frequencyType=None, interval=None, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)
+        self.assertEqual(result, expected)
