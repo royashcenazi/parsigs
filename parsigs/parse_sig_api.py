@@ -144,22 +144,31 @@ def _create_structured_sigs(model_output):
 
     multiple_instructions = _split_entities_for_multiple_instructions(entities)
 
-    structured_sig = StructuredSig(None, None, None, None, None, None, None, None, False)
-    first_sig = _create_structured_sig(multiple_instructions[0], structured_sig)
+    first_sig = _create_structured_sig(multiple_instructions[0])
 
-    other_sigs = [_create_structured_sig(instruction_entities, copy.deepcopy(structured_sig))
+    # incase multiple instructions exist, they apply to the same drug and form
+    other_sigs = [_create_structured_sig(instruction_entities, first_sig.drug, first_sig.form)
                   for instruction_entities in multiple_instructions[1:]]
 
     return [first_sig] + other_sigs
 
 
-def _create_structured_sig(model_entities, structured_sig):
+def _get_form_from_dosage_tag(text):
+    splitted = text.split(' ')
+    if len(splitted) == 2:
+        return splitted[1]
+
+
+def _create_structured_sig(model_entities, drug=None, form=None):
+    structured_sig = StructuredSig(drug, form, None, None, None, None, None, None, False)
+
     for entity in model_entities:
         text = entity.text
         label = entity.label_
         if label == 'Dosage' and text.split()[0].isnumeric():
             structured_sig.singleDosageAmount = float(text.split()[0])
             structured_sig.frequencyType = _get_frequency_type(text)
+            structured_sig.form = _get_form_from_dosage_tag(text)
         if label == 'Drug':
             structured_sig.drug = text
         if label == 'Form':
