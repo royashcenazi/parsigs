@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import re
 import logging
 from spacy import Language
+from krovetzstemmer import Stemmer
 
 # TODO handle multiple instructions in one sentence
 # TODO convert form to singular if plural using Spacy
@@ -51,7 +52,7 @@ class StructuredSig:
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-
+stemmer = Stemmer()
 default_model_name = "en_parsigs"
 
 @dataclass(frozen=True, eq=True)
@@ -142,7 +143,7 @@ def complete_sig_with_entities(model_entities, sig):
         if label == 'Drug':
             sig.drug = text
         if label == 'Form':
-            sig.form = text
+            sig.form = stemmer.stem(text)
         if label == 'Frequency':
             sig.frequencyType = _get_frequency_type(text)
             sig.interval = _get_interval(text)
@@ -270,3 +271,11 @@ class SigParser:
     def parse_many(self, sigs: list):
         return _parse_sigs(sigs, self.__language)
 
+# class EnhancedStemmer(Stemmer):
+#     def __init__(self):
+#
+#         self.__overrides = {"drops":"drop"}
+#     def stem(self, *args, **kwargs):
+#         term = self.__overrides.get(*args[0])
+#         if term is None:
+#             return Stemmer.stem(self,*args,**kwargs)
