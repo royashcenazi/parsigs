@@ -6,6 +6,8 @@ from dataclasses import dataclass
 import re
 import logging
 from spacy import Language
+import translators as ts
+
 
 # TODO handle multiple instructions in one sentence
 # TODO convert form to singular if plural using Spacy
@@ -96,9 +98,7 @@ def _pre_process(sig):
     for word in words:
         if word == 'tab':
             word = word.replace('tab', 'tablet')
-            output_words.append(word)
-        else:
-            output_words.append(word)
+        output_words.append(word)
     sig = ' '.join(output_words)
 
     sig = _convert_words_to_numbers(sig)
@@ -159,8 +159,7 @@ def complete_sig_with_entities(model_entities, sig):
 
 
 def _get_model_entities(model_output):
-    entities = model_output.ents
-    return entities
+    return model_output.ents
 
 
 def _is_number_word(word):
@@ -169,10 +168,10 @@ def _is_number_word(word):
 
 def _get_duration_string(sig):
     words = sig.split()
-    for i in range(len(words)):
-        if words[i] == 'for':
-            return ' '.join(words[i:])
-    return None
+    return next(
+        (' '.join(words[i:]) for i in range(len(words)) if words[i] == 'for'),
+        None,
+    )
 
 
 def _convert_fract_to_num(sentence):
@@ -222,19 +221,19 @@ def _is_str_float(s):
 
 
 def _get_frequency_type(frequency):
-    if frequency is not None:
-        if "hour" in frequency:
-            return "Hour"
-        if "week" in frequency:
-            return "Week"
-        if "month" in frequency:
-            return "Month"
-        if any(daily_instruction in frequency for daily_instruction in
-               ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
-            return "Day"
-        latin_freq = _get_latin_frequency(frequency)
-        if latin_freq:
-            return latin_freq.frequencyType
+    if frequency is None:
+        return
+    if "hour" in frequency:
+        return "Hour"
+    if "week" in frequency:
+        return "Week"
+    if "month" in frequency:
+        return "Month"
+    if any(daily_instruction in frequency for daily_instruction in
+           ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
+        return "Day"
+    if latin_freq := _get_latin_frequency(frequency):
+        return latin_freq.frequencyType
 
 
 def _get_interval(frequency):
@@ -245,8 +244,7 @@ def _get_interval(frequency):
         # every other TIME_UNIT means every 2 days,weeks etc
         if "other" in frequency:
             return 2
-        latin_freq = _get_latin_frequency(frequency)
-        if latin_freq:
+        if latin_freq := _get_latin_frequency(frequency):
             return latin_freq.interval
 
 
@@ -265,8 +263,25 @@ class SigParser:
         self.__language = spacy.load(model_name)
 
     def parse(self, sig: str):
+        sig = self.translate_recipe(sig)
         return _parse_sig(sig, self.__language)
 
     def parse_many(self, sigs: list):
         return _parse_sigs(sigs, self.__language)
+
+    def translate_recipe(self, recipe: str) -> str:
+        """
+        Translates a recipe from a non-English language to English using the 'ts' translation module.
+
+        Args:
+            recipe (str): The recipe text to be translated.
+
+        Returns:
+            str: The translated recipe in English.
+
+        Example:
+            >> translate_recipe("קח יחידה כל ערב למשך 10 ימים")
+            'Take one unit every evening for 10 days.'
+        """
+        return ts.translate_text(recipe, to_language='en')
 

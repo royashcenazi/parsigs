@@ -24,6 +24,13 @@ class TestParseSigApi(unittest.TestCase):
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)
 
+    def test_parse_sig_text_and_regular_numbers_hebrow(self):
+        sig = "קח שתי טבליות איבופרופן 3 פעמים בכל שבוע"
+        expected = StructuredSig(drug='ibuprofen', form='tablets', strength=None, frequencyType="Week", interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+
+        result = self.sig_parser.parse(sig)
+        self.assertEqual(result, expected)
+
     def test_parse_no_drug(self):
         sig = "Take 1 pill 3 times a day"
         expected = StructuredSig(drug=None, form='pill', strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
@@ -75,5 +82,11 @@ class TestParseSigApi(unittest.TestCase):
     def test_parse_sig_capsules(self):
         sig = "Take 2 capsules of amoxicillin 500mg"
         expected = StructuredSig(drug="amoxicillin", form="capsules", strength="500mg", frequencyType=None, interval=None, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)
+        self.assertEqual(result, expected)
+
+    def test_parse_sig_capsules_hebrow(self):
+        sig = 'קח 2 כמוסות של אמוקסיצילין 500 מ"ג'
+        expected = StructuredSig(drug="amoxicillin", form="capsules", strength="500 mg", frequencyType=None, interval=None, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)
         self.assertEqual(result, expected)
