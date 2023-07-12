@@ -1,5 +1,5 @@
 import sys
-
+import os
 import spacy
 from word2number import w2n
 from dataclasses import dataclass
@@ -7,6 +7,7 @@ import re
 from spacy import Language
 from itertools import chain
 import copy
+from spellchecker import SpellChecker
 
 
 # TODO handle multiple instructions in one sentence
@@ -86,27 +87,39 @@ def _parse_sig(sig: str, model: Language):
 
     return _create_structured_sigs(model_output)
 
+def _autocorrect(sig):
+    spell = SpellChecker()
+    spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
+    corrected_words = [spell.correction(word) if not any(char.isdigit() for char in word) else word for word in sig.split()]
+    sig = ' '.join(corrected_words)
+    return sig
+
 
 def _pre_process(sig):
-    sig = sig.lower().replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
-
-    sig = _add_space_around_parentheses(sig)
-
-    # remove extra spaces between words
-    sig = re.sub(r'\s+', ' ', sig)
-
-    output_words = []
-    words = sig.split()
-    for word in words:
-        if word == 'tab':
-            word = word.replace('tab', 'tablet')
-            output_words.append(word)
-        else:
-            output_words.append(word)
-    sig = ' '.join(output_words)
-
+    #text to lower case and remove leading and ending whitespace
+    sig = sig.lower().strip()
+    # Spell check
+    sig = _autocorrect(sig)
+    #manual replacements of familiar phrases and characters
+    replacements = {
+        ' twice ': ' 2 times ',
+        ' once ': ' 1 time ',
+        ' nightly ': ' every night ',
+        ' tab ': ' tablet ',
+        '(': ' ( ',
+        ')': ' ) ',
+        ',': ' , ',
+        '.': ' . '
+    }
+    for find, replace in replacements.items():
+        sig = sig.replace(find, replace)
+    #replace consecutive whitespace with a single space
+    sig = ' '.join(sig.split())
+    #convert words to numbers
     sig = _convert_words_to_numbers(sig)
-    return _convert_fract_to_num(sig)
+    #convert fractions to numbers
+    sig = _convert_fract_to_num(sig)
+    return sig
 
 
 def _add_space_around_parentheses(s):

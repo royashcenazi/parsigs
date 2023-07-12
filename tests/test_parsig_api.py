@@ -55,8 +55,8 @@ class TestParseSigApi(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_parse_sig_no_form(self):
-        sig = "Take 1 codaine 3 times a day"
-        expected = StructuredSig(drug='codaine', form=None, strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        sig = "Take 1 codeine 3 times a day"
+        expected = StructuredSig(drug='codeine', form=None, strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
 
@@ -101,4 +101,10 @@ class TestParseSigApi(unittest.TestCase):
         third_expected = StructuredSig(drug="benadryl", form="tablet", strength=None, frequencyType='Month', interval=1, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)
         expected = [first_expected, second_expected, third_expected]
+        self.assertEqual(result, expected)
+        
+    def test_autocorrect(self):
+        sig = "Take 1 talbet 3 tiems a day for 2 wekes"
+        expected = StructuredSig(drug=None, form="tablet", strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=2, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
