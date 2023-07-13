@@ -37,6 +37,21 @@ periodAmount : int
 takeAsNeeded : bool
     Some instructions contains a statement that the medication should be taken as needed by patient
 """
+# Global Variables
+spell = SpellChecker()
+spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
+replacements = {
+        '(':' (',
+        ')': ') ',
+        ',': ', ',
+        '.': '. ',
+        '@': 'a', 
+        '$': 's',
+        ' twice ': ' 2 times ',
+        ' once ': ' 1 time ',
+        ' nightly ': ' every night ',
+        ' tab ': ' tablet ',
+}
 
 
 @dataclass
@@ -84,13 +99,17 @@ def _parse_sigs(sig_lst, model: Language):
 def _parse_sig(sig: str, model: Language):
     sig_preprocessed = _pre_process(sig)
     model_output = model(sig_preprocessed)
-
+    
     return _create_structured_sigs(model_output)
 
 def _autocorrect(sig):
-    spell = SpellChecker()
-    spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
-    corrected_words = [spell.correction(word) if not any(char.isdigit() for char in word) else word for word in sig.split()]
+    corrected_words = []
+    for word in sig.split():
+        if not re.match(r"^[a-zA-Z]+$",word) or spell.known([word]):
+            corrected_words.append(word)
+        else:
+            corrected_word = spell.correction(word)
+            corrected_words.append(corrected_word)
     sig = ' '.join(corrected_words)
     return sig
 
@@ -101,16 +120,6 @@ def _pre_process(sig):
     # Spell check
     sig = _autocorrect(sig)
     #manual replacements of familiar phrases and characters
-    replacements = {
-        ' twice ': ' 2 times ',
-        ' once ': ' 1 time ',
-        ' nightly ': ' every night ',
-        ' tab ': ' tablet ',
-        '(': ' ( ',
-        ')': ' ) ',
-        ',': ' , ',
-        '.': ' . '
-    }
     for find, replace in replacements.items():
         sig = sig.replace(find, replace)
     #replace consecutive whitespace with a single space
