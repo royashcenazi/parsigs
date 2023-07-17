@@ -1,5 +1,4 @@
 import sys
-import os
 import spacy
 from word2number import w2n
 from dataclasses import dataclass
@@ -7,6 +6,7 @@ import re
 from spacy import Language
 from itertools import chain
 import copy
+import os
 from spellchecker import SpellChecker
 
 
@@ -37,21 +37,6 @@ periodAmount : int
 takeAsNeeded : bool
     Some instructions contains a statement that the medication should be taken as needed by patient
 """
-# Global Variables
-spell = SpellChecker()
-spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
-replacements = {
-        '(':' (',
-        ')': ') ',
-        ',': ', ',
-        '.': '. ',
-        '@': 'a', 
-        '$': 's',
-        ' twice ': ' 2 times ',
-        ' once ': ' 1 time ',
-        ' nightly ': ' every night ',
-        ' tab ': ' tablet ',
-}
 
 
 @dataclass
@@ -99,10 +84,14 @@ def _parse_sigs(sig_lst, model: Language):
 def _parse_sig(sig: str, model: Language):
     sig_preprocessed = _pre_process(sig)
     model_output = model(sig_preprocessed)
-    
+
     return _create_structured_sigs(model_output)
 
+
 def _autocorrect(sig):
+    spell = SpellChecker()
+    spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
+    sig = sig.lower().strip()
     corrected_words = []
     for word in sig.split():
         if not re.match(r"^[a-zA-Z]+$",word) or spell.known([word]):
@@ -115,18 +104,21 @@ def _autocorrect(sig):
 
 
 def _pre_process(sig):
-    #text to lower case and remove leading and ending whitespace
-    sig = sig.lower().strip()
-    # Spell check
     sig = _autocorrect(sig)
-    #manual replacements of familiar phrases and characters
+    replacements = {
+            '@': 'a', 
+            '$': 's',
+            ' twice ': ' 2 times ',
+            ' once ': ' 1 time ',
+            ' nightly ': ' every night ',
+            ' tab ': ' tablet ',
+    }
     for find, replace in replacements.items():
         sig = sig.replace(find, replace)
-    #replace consecutive whitespace with a single space
-    sig = ' '.join(sig.split())
-    #convert words to numbers
+    sig = _add_space_around_parentheses(sig)
+    # remove extra spaces between words
+    sig = re.sub(r'\s+', ' ', sig)
     sig = _convert_words_to_numbers(sig)
-    #convert fractions to numbers
     sig = _convert_fract_to_num(sig)
     return sig
 
