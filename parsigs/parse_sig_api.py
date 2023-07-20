@@ -94,7 +94,7 @@ def _autocorrect(sig):
     sig = sig.lower().strip()
     corrected_words = []
     for word in sig.split():
-        if not re.match(r"^[a-zA-Z]+$",word) or spell.known([word]):
+        if not re.match(r"^[a-zA-Z]+$",word) or spell.known([word]): #r"^[a-zA-Z]+$" is a regex that checks if the word is only letters
             corrected_words.append(word)
         else:
             corrected_word = spell.correction(word)
@@ -105,22 +105,21 @@ def _autocorrect(sig):
 
 def _pre_process(sig):
     sig = _autocorrect(sig)
-    replacements = {
-            '@': 'a', 
-            '$': 's',
-            ' twice ': ' 2 times ',
-            ' once ': ' 1 time ',
-            ' nightly ': ' every night ',
-            ' tab ': ' tablet ',
-    }
-    for find, replace in replacements.items():
-        sig = sig.replace(find, replace)
+    sig = sig.replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
     sig = _add_space_around_parentheses(sig)
     # remove extra spaces between words
     sig = re.sub(r'\s+', ' ', sig)
+    output_words = []
+    words = sig.split()
+    for word in words:
+        if word == 'tab':
+            word = word.replace('tab', 'tablet')
+            output_words.append(word)
+        else:
+            output_words.append(word)
+    sig = ' '.join(output_words)
     sig = _convert_words_to_numbers(sig)
-    sig = _convert_fract_to_num(sig)
-    return sig
+    return _convert_fract_to_num(sig)
 
 
 def _add_space_around_parentheses(s):
