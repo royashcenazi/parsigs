@@ -58,7 +58,7 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 default_model_name = "en_parsigs"
 
 spell = SpellChecker()
-spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
+spell.word_frequency.load_text_file(os.path.join('resources', 'drug_names.txt'))
 
 
 @dataclass(frozen=True, eq=True)
