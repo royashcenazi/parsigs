@@ -57,6 +57,9 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 
 default_model_name = "en_parsigs"
 
+spell = SpellChecker()
+spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
+
 
 @dataclass(frozen=True, eq=True)
 class _Frequency:
@@ -89,8 +92,6 @@ def _parse_sig(sig: str, model: Language):
 
 
 def _autocorrect(sig):
-    spell = SpellChecker()
-    spell.word_frequency.load_text_file(os.path.join('data', 'drug_names.txt'))
     sig = sig.lower().strip()
     corrected_words = []
     for word in sig.split():
