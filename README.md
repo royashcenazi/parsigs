@@ -1,5 +1,5 @@
 # Parsigs - the private, smart and easy Sig (Dosage Instructions) text-parser 
-
+![Project Logo](./logo.png)
 Parsigs is an open-source project that aims to extract relevant information from doctors' signature text without compromising privacy and PHI (Protected Health Information) using Natural Language Processing.
 
 # CALL FOR CONTRIBUTORS
