@@ -53,12 +53,12 @@ class TestParseSigApi(unittest.TestCase):
         period_for_string, period_for_obj = random.choice(list(period_dict.items()))
 
         # Construct prescription string using random values
-        sig = f"Take {count_tabs} tabs of amoxicillin {count_mg}mg every {count_every_days} days for {count_days} {period_for_string}"
+        sig = f"Take {count_tabs} tablets of amoxicillin {count_mg}mg every {count_every_days} days for {count_days} {period_for_string}"
 
         # Expected StructuredSig using random values
         expected = StructuredSig(
             drug="amoxicillin",
-            form="tabs",
+            form="tablets",
             strength=f"{count_mg}mg",
             frequencyType="Day",
             interval=count_every_days,
@@ -73,6 +73,7 @@ class TestParseSigApi(unittest.TestCase):
 
         # Assert parsed result matches expected
         self.assertEqual(result, expected)
+
 
 
 
