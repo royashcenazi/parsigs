@@ -1,4 +1,5 @@
-spacy>=3.0,<4.0
+spacy>=3.0
 word2number
 en-parsigs @ https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl
-pyspellchecker<= 0.5.5
+pyspellchecker>= 0.5.5
+en-core-web-sm>=3.1.0
