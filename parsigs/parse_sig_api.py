@@ -1,5 +1,4 @@
 import sys
-
 import spacy
 from word2number import w2n
 from dataclasses import dataclass
@@ -7,6 +6,8 @@ import re
 from spacy import Language
 from itertools import chain
 import copy
+import os
+from spellchecker import SpellChecker
 
 
 # TODO handle multiple instructions in one sentence
@@ -56,6 +57,9 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 
 default_model_name = "en_parsigs"
 
+spell = SpellChecker()
+spell.word_frequency.load_text_file(os.path.join('resources', 'drug_names.txt'))
+
 
 @dataclass(frozen=True, eq=True)
 class _Frequency:
@@ -87,14 +91,25 @@ def _parse_sig(sig: str, model: Language):
     return _create_structured_sigs(model_output)
 
 
+def _autocorrect(sig):
+    sig = sig.lower().strip()
+    corrected_words = []
+    for word in sig.split():
+        if not re.match(r"^[a-zA-Z]+$",word) or spell.known([word]): #r"^[a-zA-Z]+$" is a regex that checks if the word is only letters
+            corrected_words.append(word)
+        else:
+            corrected_word = spell.correction(word)
+            corrected_words.append(corrected_word)
+    sig = ' '.join(corrected_words)
+    return sig
+
+
 def _pre_process(sig):
-    sig = sig.lower().replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
-
+    sig = _autocorrect(sig)
+    sig = sig.replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
     sig = _add_space_around_parentheses(sig)
-
     # remove extra spaces between words
     sig = re.sub(r'\s+', ' ', sig)
-
     output_words = []
     words = sig.split()
     for word in words:
@@ -104,7 +119,6 @@ def _pre_process(sig):
         else:
             output_words.append(word)
     sig = ' '.join(output_words)
-
     sig = _convert_words_to_numbers(sig)
     return _convert_fract_to_num(sig)
 

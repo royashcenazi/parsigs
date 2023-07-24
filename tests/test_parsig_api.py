@@ -55,8 +55,8 @@ class TestParseSigApi(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_parse_sig_no_form(self):
-        sig = "Take 1 codaine 3 times a day"
-        expected = StructuredSig(drug='codaine', form=None, strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        sig = "Take 1 codeine 3 times a day"
+        expected = StructuredSig(drug='codeine', form=None, strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
 
@@ -102,3 +102,52 @@ class TestParseSigApi(unittest.TestCase):
         result = self.sig_parser.parse(sig)
         expected = [first_expected, second_expected, third_expected]
         self.assertEqual(result, expected)
+        
+    def test_autocorrect_and__pre_process1(self):
+        sig = "Tkae 1 talbet 3 tiems a day for 2 wekes"
+        expected = StructuredSig(drug=None, form="tablet", strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=2, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+        
+    def test_autocorrect_and__pre_process2(self):
+        sig = "Tkae 1 talbet of ibuprofen 200mg 3 tiems every day for 10 wekes"
+        expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType="Week", periodAmount=10, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
+    def test_autocorrect_and__pre_process3(self):
+        sig = "Take 1 TableT of (Bendaryl) 3 times a day"
+        expected = StructuredSig(drug='benadryl', form='tablet', strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+        
+    def test_autocorrect_and__pre_process4(self):
+        sig = "Atke 1 tab of Benadryl 3 tmies a day"
+        expected = StructuredSig(drug='benadryl', form='tablet', strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
+
+    def test_autocorrect_and_pre_process5(self):
+        sig = "Atek 1 t@b of Benadryl 3 times a dya"
+        expected = StructuredSig(drug='benadryl', form='tablet', strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
+    def test_autocorrect_and_pre_process6(self):
+        sig = "tkae 1 talbet of atorva$tatin every day and hten 2 talbets every week"
+        first_expected = StructuredSig(drug="atorvastatin", form="tablet", strength=None, frequencyType="Day", interval=1, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        second_expected = StructuredSig(drug="atorvastatin", form="tablets", strength=None, frequencyType="Week", interval=1, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)
+        expected = [first_expected, second_expected]
+        self.assertEqual(result, expected)
+
+    def test_autocorrect_and_pre_process7(self):
+        sig = "tkae two talbets of benadryl every two days and then 1 talbet every week for 1 month and than 1 talbet every month"
+        first_expected = StructuredSig(drug="benadryl", form="tablets", strength=None, frequencyType="Day", interval=2, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        second_expected = StructuredSig(drug="benadryl", form="tablet", strength=None, frequencyType='Week', interval=1, singleDosageAmount=1.0, periodType='Month', periodAmount=1, takeAsNeeded=False)
+        third_expected = StructuredSig(drug="benadryl", form="tablet", strength=None, frequencyType='Month', interval=1, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)
+        expected = [first_expected, second_expected, third_expected]
+        self.assertEqual(result, expected)
+        
