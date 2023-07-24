@@ -11,6 +11,8 @@ import copy
 import os
 from spellchecker import SpellChecker
 
+from parsigs.image_to_text import image_to_text
+
 
 # TODO handle multiple instructions in one sentence
 # TODO convert form to singular if plural using Spacy
@@ -98,6 +100,9 @@ def _parse_sig(sig: str, model: Language):
     model_output = model(sig_preprocessed)
 
     return _create_structured_sigs(model_output)
+
+def _parse_sig_image(image_path: str, lang:str, model: Language):
+    return _parse_sig(image_to_text(image_path, lang), model)
 
 
 def _autocorrect(sig):
@@ -323,4 +328,10 @@ class SigParser:
 
     def parse_many(self, sigs: list):
         return _parse_sigs(sigs, self.__language)
+    
+    def parse_image(self, image_path: str, lang:str = "eng", image:boolean):
+        if image:
+            return _parse_sig_image(image_path, lang, self.__language)
+        else:
+            return parse(image_path)
 
