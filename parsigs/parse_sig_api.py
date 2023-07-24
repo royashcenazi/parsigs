@@ -1,4 +1,6 @@
 import sys
+from pathlib import Path
+
 import spacy
 from word2number import w2n
 from dataclasses import dataclass
@@ -57,8 +59,15 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 
 default_model_name = "en_parsigs"
 
-spell = SpellChecker()
-spell.word_frequency.load_text_file(os.path.join('resources', 'drug_names.txt'))
+def _create_spell_checker():
+    sc = SpellChecker()
+    drug_words_frequency = Path(__file__).parent / 'resources/drug_names.txt'
+    sc.word_frequency.load_text_file(drug_words_frequency)
+    sc.word_frequency.remove_words(["talbot"])
+    return sc
+
+
+spell_checker = _create_spell_checker()
 
 
 @dataclass(frozen=True, eq=True)
@@ -95,10 +104,11 @@ def _autocorrect(sig):
     sig = sig.lower().strip()
     corrected_words = []
     for word in sig.split():
-        if not re.match(r"^[a-zA-Z]+$",word) or spell.known([word]): #r"^[a-zA-Z]+$" is a regex that checks if the word is only letters
+        # checking if the word is only letters
+        if not re.match(r"^[a-zA-Z]+$", word) or spell_checker.known([word]):
             corrected_words.append(word)
         else:
-            corrected_word = spell.correction(word)
+            corrected_word = spell_checker.correction(word)
             corrected_words.append(corrected_word)
     sig = ' '.join(corrected_words)
     return sig
