@@ -1,3 +1,4 @@
 spacy>=3.0,<4.0
 word2number
+pyspellchecker<= 0.5.5
 inflect
