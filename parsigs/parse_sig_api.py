@@ -182,6 +182,10 @@ def _get_form_from_dosage_tag(text):
     if len(splitted) == 2:
         return splitted[1]
 
+def to_singular(text):
+    # turn to singular if plural else keep as is
+    singular = inflect.engine().singular_noun(text)
+    return singular if singular else text
 
 def _create_structured_sig(model_entities, drug=None, form=None):
     structured_sig = StructuredSig(drug, form, None, None, None, None, None, None, False)
@@ -192,14 +196,13 @@ def _create_structured_sig(model_entities, drug=None, form=None):
         if label == 'Dosage' and text.split()[0].isnumeric():
             structured_sig.singleDosageAmount = float(text.split()[0])
             structured_sig.frequencyType = _get_frequency_type(text)
-            structured_sig.form = _get_form_from_dosage_tag(text)
+            form_from_dosage = _get_form_from_dosage_tag(text)
+            if form_from_dosage is not None:
+                structured_sig.form = to_singular(form_from_dosage)
         if label == 'Drug':
             structured_sig.drug = text
         if label == 'Form':
-            structured_sig.form = inflect.engine().singular_noun(text)
-            # turn form to singular if plural else keep as is
-            singular = inflect.engine().singular_noun(text)
-            structured_sig.form = singular if singular else text
+            structured_sig.form = to_singular(text)
         if label == 'Frequency':
             structured_sig.frequencyType = _get_frequency_type(text)
             structured_sig.interval = _get_interval(text)
