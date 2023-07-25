@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import re
 import logging
 from spacy import Language
-from parsigs.sig_terms_stemmer import SigTermsStemmer
+import inflect
 # TODO handle multiple instructions in one sentence
 # TODO Create Pypi distribution
 
@@ -50,7 +50,6 @@ class StructuredSig:
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-sig_stemmer = SigTermsStemmer()
 default_model_name = "en_parsigs"
 
 @dataclass(frozen=True, eq=True)
@@ -141,7 +140,10 @@ def complete_sig_with_entities(model_entities, sig):
         if label == 'Drug':
             sig.drug = text
         if label == 'Form':
-            sig.form = sig_stemmer.stem(text)
+            sig.form = inflect.engine().singular_noun(text)
+            # turn form to singular if plural else keep as is
+            singular = inflect.engine().singular_noun(text)
+            sig.form = singular if singular else text
         if label == 'Frequency':
             sig.frequencyType = _get_frequency_type(text)
             sig.interval = _get_interval(text)
