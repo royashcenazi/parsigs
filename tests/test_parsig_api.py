@@ -151,4 +151,4 @@ class TestParseSigApi(unittest.TestCase):
         result = self.sig_parser.parse(sig)
         expected = [first_expected, second_expected, third_expected]
         self.assertEqual(result, expected)
-        
+
