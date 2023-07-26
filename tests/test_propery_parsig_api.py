@@ -10,9 +10,9 @@ class TestParseSigApi(unittest.TestCase):
 
     @given(st.integers(min_value=1, max_value=30))
     @settings(max_examples=30)
-    def test_parse_sig_strength(self, integer):
-        sig = f"Take 1 tablet of ibuprofen {integer}mg 3 times every day for 10 weeks"
-        expected = StructuredSig(drug="ibuprofen", form="tablet", strength=f"{integer}mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType="Week", periodAmount=10, takeAsNeeded=False)
+    def test_parse_sig_strength(self, strength):
+        sig = f"Take 1 tablet of ibuprofen {strength}mg 3 times every day for 10 weeks"
+        expected = StructuredSig(drug="ibuprofen", form="tablet", strength=f"{strength}mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType="Week", periodAmount=10, takeAsNeeded=False)
         result = self.parser.parse(sig)
         self.assertEqual(result, expected)
 
