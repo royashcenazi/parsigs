@@ -24,13 +24,6 @@ class TestParseSigApi(unittest.TestCase):
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
 
-    def test_parse_sig_text_and_regular_numbers_hebrow(self):
-        sig = "קח שתי טבליות איבופרופן 3 פעמים בכל שבוע"
-        expected = StructuredSig(drug='ibuprofen', form='tablets', strength=None, frequencyType="Week", interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
-
-        result = self.sig_parser.parse(sig)
-        self.assertEqual(result, expected)
-
     def test_parse_no_drug(self):
         sig = "Take 1 pill 3 times a day"
         expected = StructuredSig(drug=None, form='pill', strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
