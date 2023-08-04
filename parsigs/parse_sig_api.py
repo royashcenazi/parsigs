@@ -59,6 +59,8 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 
 default_model_name = "en_parsigs"
 
+inflect_engine = inflect.engine()
+
 def _create_spell_checker():
     sc = SpellChecker()
     drug_words_frequency = Path(__file__).parent / 'resources/drug_names.txt'
@@ -182,9 +184,9 @@ def _get_form_from_dosage_tag(text):
     if len(splitted) == 2:
         return splitted[1]
 
-def to_singular(text):
+def _to_singular(text):
     # turn to singular if plural else keep as is
-    singular = inflect.engine().singular_noun(text)
+    singular = inflect_engine.singular_noun(text)
     return singular if singular else text
 
 def _create_structured_sig(model_entities, drug=None, form=None):
@@ -198,11 +200,11 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             structured_sig.frequencyType = _get_frequency_type(text)
             form_from_dosage = _get_form_from_dosage_tag(text)
             if form_from_dosage is not None:
-                structured_sig.form = to_singular(form_from_dosage)
+                structured_sig.form = _to_singular(form_from_dosage)
         if label == 'Drug':
             structured_sig.drug = text
         if label == 'Form':
-            structured_sig.form = to_singular(text)
+            structured_sig.form = _to_singular(text)
         if label == 'Frequency':
             structured_sig.frequencyType = _get_frequency_type(text)
             structured_sig.interval = _get_interval(text)
