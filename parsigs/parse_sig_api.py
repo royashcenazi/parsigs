@@ -329,4 +329,3 @@ class SigParser:
 
     def parse_many(self, sigs: list):
         return _parse_sigs(sigs, self.__language)
-
