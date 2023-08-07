@@ -1,7 +1,5 @@
 # Parsigs - Private, Smart, and Easy Sig (Dosage Instructions) Text Parser
 
-![Project Logo](./parsigs.png)
-
 [![GitHub stars](https://img.shields.io/github/stars/royashcenazi/parsigs)](https://github.com/royashcenazi/parsigs/stargazers)
 [![GitHub license](https://img.shields.io/github/license/royashcenazi/parsigs)](https://github.com/royashcenazi/parsigs/blob/main/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/royashcenazi/parsigs)](https://github.com/royashcenazi/parsigs/issues)
