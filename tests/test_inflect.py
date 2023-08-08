@@ -1,5 +1,7 @@
 import unittest
 import inflect
+
+
 class TestInflect(unittest.TestCase):
     def test_inflect(self):
         self.assertEqual(inflect.engine().singular_noun("tablets"), "tablet")

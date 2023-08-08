@@ -1,18 +1,15 @@
-import sys
-from pathlib import Path
-
-import spacy
-from word2number import w2n
-from dataclasses import dataclass
 import re
-from spacy import Language
+from dataclasses import dataclass
 from itertools import chain
-import copy
-import os
-from spellchecker import SpellChecker
-
+from pathlib import Path
+from typing import Optional
 
 import inflect
+import spacy
+from spacy import Language
+from spellchecker import SpellChecker
+from word2number import w2n
+
 # TODO handle multiple instructions in one sentence
 # TODO Create Pypi distribution
 
@@ -37,33 +34,46 @@ periodType : str
 periodAmount : int
     The duration of the period for the dosage (e.g. 7 days, 2 months, etc.).
 takeAsNeeded : bool
-    Some instructions contains a statement that the medication should be taken as needed by patient
+    Some instructions contains a statement that the medication should be taken
+    as needed by patient
 """
 
 
 @dataclass
 class StructuredSig:
-    drug: str
-    form: str
-    strength: str
-    frequencyType: str
-    interval: int
-    singleDosageAmount: float
-    periodType: str
-    periodAmount: int
-    takeAsNeeded: bool
+    drug: Optional[str]
+    form: Optional[str]
+    strength: Optional[str] = None
+    frequency_type: Optional[str] = None
+    interval: Optional[int] = None
+    single_dosage_amount: Optional[float] = None
+    period_type: Optional[str] = None
+    period_amount: Optional[int] = None
+    take_as_needed: bool = False
 
 
-dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
-number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+dose_instructions = ["take", "inhale", "instill", "apply", "spray", "swallow"]
+number_words = [
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+]
 
 default_model_name = "en_parsigs"
 
 inflect_engine = inflect.engine()
 
+
 def _create_spell_checker():
     sc = SpellChecker()
-    drug_words_frequency = Path(__file__).parent / 'resources/drug_names.txt'
+    drug_words_frequency = Path(__file__).parent / "resources/drug_names.txt"
     sc.word_frequency.load_text_file(drug_words_frequency)
     sc.word_frequency.remove_words(["talbot"])
     return sc
@@ -74,20 +84,27 @@ spell_checker = _create_spell_checker()
 
 @dataclass(frozen=True, eq=True)
 class _Frequency:
-    frequencyType: str
+    frequency_type: str
     interval: int
 
 
 # TODO add qXd support
-latin_frequency_types = {"qd": _Frequency("Day", 1), "bid": _Frequency("Day", 2), "tid": _Frequency("Day", 3),
-                         "qid": _Frequency("Day", 4)}
+latin_frequency_types = {
+    "qd": _Frequency("Day", 1),
+    "bid": _Frequency("Day", 2),
+    "tid": _Frequency("Day", 3),
+    "qid": _Frequency("Day", 4),
+}
 
 
 def _flatmap(func, iterable):
     return list(chain.from_iterable(map(func, iterable)))
+
+
 """
 Converts a medication dosage instructions string to a StructuredSig object.
-The input string is pre processed, and than combining static rules and NER model outputs, a StructuredSig object is created.
+The input string is pre processed, and than combining static rules and NER model
+outputs, a StructuredSig object is created.
 """
 
 
@@ -112,32 +129,36 @@ def _autocorrect(sig):
         else:
             corrected_word = spell_checker.correction(word)
             corrected_words.append(corrected_word)
-    sig = ' '.join(corrected_words)
+    sig = " ".join(corrected_words)
     return sig
 
 
 def _pre_process(sig):
     sig = _autocorrect(sig)
-    sig = sig.replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
+    sig = (
+        sig.replace("twice", "2 times")
+        .replace("once", "1 time")
+        .replace("nightly", "every night")
+    )
     sig = _add_space_around_parentheses(sig)
     # remove extra spaces between words
-    sig = re.sub(r'\s+', ' ', sig)
+    sig = re.sub(r"\s+", " ", sig)
     output_words = []
     words = sig.split()
     for word in words:
-        if word == 'tab':
-            word = word.replace('tab', 'tablet')
+        if word == "tab":
+            word = word.replace("tab", "tablet")
             output_words.append(word)
         else:
             output_words.append(word)
-    sig = ' '.join(output_words)
+    sig = " ".join(output_words)
     sig = _convert_words_to_numbers(sig)
     return _convert_fract_to_num(sig)
 
 
 def _add_space_around_parentheses(s):
-    s = re.sub(r'(?<!\s)\(', r' (', s)
-    s = re.sub(r'\)(?!\s)', r') ', s)
+    s = re.sub(r"(?<!\s)\(", r" (", s)
+    s = re.sub(r"\)(?!\s)", r") ", s)
     return s
 
 
@@ -165,7 +186,6 @@ def _split_entities_for_multiple_instructions(model_entities):
 
 
 def _create_structured_sigs(model_output):
-
     entities = _get_model_entities(model_output)
 
     multiple_instructions = _split_entities_for_multiple_instructions(entities)
@@ -173,51 +193,64 @@ def _create_structured_sigs(model_output):
     first_sig = _create_structured_sig(multiple_instructions[0])
 
     # incase multiple instructions exist, they apply to the same drug and form
-    other_sigs = [_create_structured_sig(instruction_entities, first_sig.drug, first_sig.form)
-                  for instruction_entities in multiple_instructions[1:]]
+    other_sigs = [
+        _create_structured_sig(instruction_entities, first_sig.drug, first_sig.form)
+        for instruction_entities in multiple_instructions[1:]
+    ]
 
-    return [first_sig] + other_sigs
+    return [first_sig, *other_sigs]
 
 
 def _get_form_from_dosage_tag(text):
-    splitted = text.split(' ')
+    splitted = text.split(" ")
     if len(splitted) == 2:
         return splitted[1]
+
 
 def _to_singular(text):
     # turn to singular if plural else keep as is
     singular = inflect_engine.singular_noun(text)
     return singular if singular else text
 
+
 def _create_structured_sig(model_entities, drug=None, form=None):
-    structured_sig = StructuredSig(drug, form, None, None, None, None, None, None, False)
+    structured_sig = StructuredSig(drug, form)
 
     for entity in model_entities:
         text = entity.text
         label = entity.label_
-        if label == 'Dosage' and text.split()[0].isnumeric():
-            structured_sig.singleDosageAmount = float(text.split()[0])
-            structured_sig.frequencyType = _get_frequency_type(text)
-            form_from_dosage = _get_form_from_dosage_tag(text)
-            if form_from_dosage is not None:
-                structured_sig.form = _to_singular(form_from_dosage)
-        if label == 'Drug':
+        if label == "Dosage" and text.split()[0].isnumeric():
+            _update_dosage_sig(structured_sig, text)
+        if label == "Drug":
             structured_sig.drug = text
-        if label == 'Form':
+        if label == "Form":
             structured_sig.form = _to_singular(text)
-        if label == 'Frequency':
-            structured_sig.frequencyType = _get_frequency_type(text)
-            structured_sig.interval = _get_interval(text)
-            # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
-            if structured_sig.interval is None:
-                structured_sig.interval = 1
-            structured_sig.takeAsNeeded = _should_take_as_needed(text)
-        if label == 'Duration':
-            structured_sig.periodType = _get_frequency_type(text)
-            structured_sig.periodAmount = _get_interval(text)
-        if label == 'Strength':
+        if label == "Frequency":
+            _update_frequency_sig(structured_sig, text)
+        if label == "Duration":
+            structured_sig.period_type = _get_frequency_type(text)
+            structured_sig.period_amount = _get_interval(text)
+        if label == "Strength":
             structured_sig.strength = text
     return structured_sig
+
+
+def _update_dosage_sig(structured_sig, text):
+    structured_sig.frequency_type = _get_frequency_type(text)
+    structured_sig.single_dosage_amount = float(text.split()[0])
+    form_from_dosage = _get_form_from_dosage_tag(text)
+    if form_from_dosage is not None:
+        structured_sig.form = _to_singular(form_from_dosage)
+
+
+def _update_frequency_sig(structured_sig, text):
+    structured_sig.frequency_type = _get_frequency_type(text)
+    structured_sig.interval = _get_interval(text)
+    # Default added only if there is a frequency tag in the sig,
+    # handles cases such as "Every TIME_UNIT"
+    if structured_sig.interval is None:
+        structured_sig.interval = 1
+    structured_sig.take_as_needed = _should_take_as_needed(text)
 
 
 def _get_model_entities(model_output):
@@ -232,25 +265,27 @@ def _is_number_word(word):
 def _get_duration_string(sig):
     words = sig.split()
     for i in range(len(words)):
-        if words[i] == 'for':
-            return ' '.join(words[i:])
+        if words[i] == "for":
+            return " ".join(words[i:])
     return None
 
 
 def _convert_fract_to_num(sentence):
     def is_frac(_word):
-        nums = _word.split('/')
-        return len(nums) == 2 and '/' in _word and nums[0].isdigit() and nums[1].isdigit()
+        nums = _word.split("/")
+        return (
+            len(nums) == 2 and "/" in _word and nums[0].isdigit() and nums[1].isdigit()
+        )
 
     words = sentence.split()
     output_words = []
     for word in words:
         if is_frac(word):
-            num, denom = word.split('/')
+            num, denom = word.split("/")
             output_words.append(str(int(num) / int(denom)))
         else:
             output_words.append(word)
-    return ' '.join(output_words)
+    return " ".join(output_words)
 
 
 def _convert_words_to_numbers(sentence):
@@ -261,7 +296,7 @@ def _convert_words_to_numbers(sentence):
             output_words.append(str(w2n.word_to_num(word)))
         else:
             output_words.append(word)
-    return ' '.join(output_words)
+    return " ".join(output_words)
 
 
 def _get_single_dose(sig):
@@ -291,12 +326,22 @@ def _get_frequency_type(frequency):
             return "Week"
         if "month" in frequency:
             return "Month"
-        if any(daily_instruction in frequency for daily_instruction in
-               ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
+        if any(
+            daily_instruction in frequency
+            for daily_instruction in (
+                "day",
+                "daily",
+                "night",
+                "morning",
+                "evening",
+                "noon",
+                "bedtime",
+            )
+        ):
             return "Day"
         latin_freq = _get_latin_frequency(frequency)
         if latin_freq:
-            return latin_freq.frequencyType
+            return latin_freq.frequency_type
 
 
 def _get_interval(frequency):
@@ -313,7 +358,7 @@ def _get_interval(frequency):
 
 
 def _get_latin_frequency(frequency):
-    for latin_freq in latin_frequency_types.keys():
+    for latin_freq in latin_frequency_types:
         if latin_freq in frequency:
             return latin_frequency_types[latin_freq]
 

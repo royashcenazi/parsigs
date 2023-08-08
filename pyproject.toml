@@ -14,14 +14,22 @@ readme = "README.md"
 dependencies = [
     "spacy>=3.0,<4.0",
     "word2number",
-    "inflect"
-#    "en-parsigs @ https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl",
+    "inflect",
+    "en-parsigs @ https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl",
     "pyspellchecker<= 0.5.5",
 ]
 
-[tool.hatch.metadata]
-#allow-direct-references = true
+[project.optional-dependencies]
+dev = [
+    "hypothesis",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "tox",
+]
 
+[tool.hatch.metadata]
+allow-direct-references = true
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -32,3 +40,31 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/royashcenazi/parsigs"
 "Bug Tracker" = "https://github.com/royashcenazi/parsigs/issues"
+
+[tool.ruff]
+src = ["src", "tests"]
+target-version = "py37"
+select = [
+    "A",    #  builtins
+    "ARG",  #  unsued arguments
+    "B",    #  bugbear
+    "C4",   #  comprehensions
+    "C90",  #  mccabe
+    "COM",  #  commas
+    "E",    #  pycodestyle
+    "F",    #  pyflakes
+    "I",    #  isort
+    "N",    #  pep8-naming
+    "PT",   #  pytest style
+    "RUF",  #  ruff
+    "SIM",  #  simplify
+    "TID",  #  tidy imports
+    "UP",   #  pyupgrade
+    "W",    #  warnings
+]
+
+[tool.ruff.mccabe]
+max-complexity = 8
+
+[tool.ruff.isort]
+force-single-line = true

@@ -1,8 +1,11 @@
 import random
-
-from hypothesis import given, settings, strategies as st
 import unittest
-from parsigs.parse_sig_api import SigParser, StructuredSig
+
+from hypothesis import given
+from hypothesis import settings
+from hypothesis import strategies as st
+from parsigs.parse_sig_api import SigParser
+from parsigs.parse_sig_api import StructuredSig
 
 
 class TestParseSigApi(unittest.TestCase):
@@ -12,7 +15,19 @@ class TestParseSigApi(unittest.TestCase):
     @settings(max_examples=30)
     def test_parse_sig_strength(self, strength):
         sig = f"Take 1 tablet of ibuprofen {strength}mg 3 times every day for 10 weeks"
-        expected = StructuredSig(drug="ibuprofen", form="tablet", strength=f"{strength}mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType="Week", periodAmount=10, takeAsNeeded=False)
+        expected = [
+            StructuredSig(
+                drug="ibuprofen",
+                form="tablet",
+                strength=f"{strength}mg",
+                frequency_type="Day",
+                interval=3,
+                single_dosage_amount=1.0,
+                period_type="Week",
+                period_amount=10,
+                take_as_needed=False,
+            ),
+        ]
         result = self.parser.parse(sig)
         self.assertEqual(result, expected)
 
@@ -20,14 +35,11 @@ class TestParseSigApi(unittest.TestCase):
         count_tabs=st.integers(min_value=1, max_value=5),
         count_mg=st.integers(min_value=300, max_value=500),
         count_every_days=st.integers(min_value=3, max_value=10),
-        count_days=st.integers(min_value=4, max_value=10)
+        count_days=st.integers(min_value=4, max_value=10),
     )
-    def test_parse_sig_period(self,
-            count_tabs: int,
-            count_mg: int,
-            count_every_days: int,
-            count_days: int
-    ) -> bool:
+    def test_parse_sig_period(
+        self, count_tabs: int, count_mg: int, count_every_days: int, count_days: int,
+    ):
         """
         Test parsing prescription instructions with period values.
 
@@ -56,17 +68,19 @@ class TestParseSigApi(unittest.TestCase):
         sig = f"Take {count_tabs} tablets of amoxicillin {count_mg}mg every {count_every_days} days for {count_days} {period_for_string}"
 
         # Expected StructuredSig using random values
-        expected = StructuredSig(
-            drug="amoxicillin",
-            form="tablets",
-            strength=f"{count_mg}mg",
-            frequencyType="Day",
-            interval=count_every_days,
-            singleDosageAmount=float(count_tabs),
-            periodType=period_for_obj,
-            periodAmount=count_days,
-            takeAsNeeded=False
-        )
+        expected = [
+            StructuredSig(
+                drug="amoxicillin",
+                form="tablet",
+                strength=f"{count_mg}mg",
+                frequency_type="Day",
+                interval=count_every_days,
+                single_dosage_amount=float(count_tabs),
+                period_type=period_for_obj,
+                period_amount=count_days,
+                take_as_needed=False,
+            ),
+        ]
 
         # Parse prescription string
         result = self.parser.parse(sig)
@@ -75,7 +89,5 @@ class TestParseSigApi(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
