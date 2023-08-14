@@ -59,7 +59,17 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 
 default_model_name = "en_parsigs"
 
+<<<<<<< HEAD
+known_cases = {
+    'twice': '2 times',
+    'once': '1 time',
+    'nightly': 'every night',
+    'tab' : 'tablet'
+}
+
+=======
 inflect_engine = inflect.engine()
+>>>>>>> d52e2d5788c422c40b7e61b846fc841eaa8dc419
 
 def _create_spell_checker():
     sc = SpellChecker()
@@ -115,22 +125,16 @@ def _autocorrect(sig):
     sig = ' '.join(corrected_words)
     return sig
 
+def _replace_known_cases(sig):
+    for word, replacement_word in known_cases.items():
+            sig.replace(word, replacement_word)
+    return sig
 
 def _pre_process(sig):
     sig = _autocorrect(sig)
-    sig = sig.replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
     sig = _add_space_around_parentheses(sig)
-    # remove extra spaces between words
     sig = re.sub(r'\s+', ' ', sig)
-    output_words = []
-    words = sig.split()
-    for word in words:
-        if word == 'tab':
-            word = word.replace('tab', 'tablet')
-            output_words.append(word)
-        else:
-            output_words.append(word)
-    sig = ' '.join(output_words)
+    sig = _replace_known_cases(sig)
     sig = _convert_words_to_numbers(sig)
     return _convert_fract_to_num(sig)
 
