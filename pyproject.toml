@@ -16,7 +16,7 @@ dependencies = [
     "word2number",
     "inflect"
 #    "en-parsigs @ https://huggingface.co/royashcenazi/en_parsigs/resolve/main/en_parsigs-any-py3-none-any.whl",
-    "pyspellchecker<= 0.5.5",
+    "pyspellchecker>=0.5.5",
 ]
 
 [tool.hatch.metadata]
