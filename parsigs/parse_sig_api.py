@@ -12,8 +12,8 @@ import os
 from spellchecker import SpellChecker
 
 
+import inflect
 # TODO handle multiple instructions in one sentence
-# TODO convert form to singular if plural using Spacy
 # TODO Create Pypi distribution
 
 """
@@ -59,6 +59,7 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 
 default_model_name = "en_parsigs"
 
+<<<<<<< HEAD
 known_cases = {
     'twice': '2 times',
     'once': '1 time',
@@ -66,6 +67,9 @@ known_cases = {
     'tab' : 'tablet'
 }
 
+=======
+inflect_engine = inflect.engine()
+>>>>>>> d52e2d5788c422c40b7e61b846fc841eaa8dc419
 
 def _create_spell_checker():
     sc = SpellChecker()
@@ -184,6 +188,10 @@ def _get_form_from_dosage_tag(text):
     if len(splitted) == 2:
         return splitted[1]
 
+def _to_singular(text):
+    # turn to singular if plural else keep as is
+    singular = inflect_engine.singular_noun(text)
+    return singular if singular else text
 
 def _create_structured_sig(model_entities, drug=None, form=None):
     structured_sig = StructuredSig(drug, form, None, None, None, None, None, None, False)
@@ -194,11 +202,13 @@ def _create_structured_sig(model_entities, drug=None, form=None):
         if label == 'Dosage' and text.split()[0].isnumeric():
             structured_sig.singleDosageAmount = float(text.split()[0])
             structured_sig.frequencyType = _get_frequency_type(text)
-            structured_sig.form = _get_form_from_dosage_tag(text)
+            form_from_dosage = _get_form_from_dosage_tag(text)
+            if form_from_dosage is not None:
+                structured_sig.form = _to_singular(form_from_dosage)
         if label == 'Drug':
             structured_sig.drug = text
         if label == 'Form':
-            structured_sig.form = text
+            structured_sig.form = _to_singular(text)
         if label == 'Frequency':
             structured_sig.frequencyType = _get_frequency_type(text)
             structured_sig.interval = _get_interval(text)
