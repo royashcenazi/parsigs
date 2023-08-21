@@ -24,6 +24,13 @@ class TestParseSigApi(unittest.TestCase):
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
 
+    def test_parse_sig_period_year(self):
+        sig = "Take 2 tabs of amoxicillin 500mg every 12 days for 2 years"
+        expected = StructuredSig(drug="amoxicillin", form="tab", strength="500mg", frequencyType="Day", interval=12, 
+                                 singleDosageAmount=2.0, periodType="Year", periodAmount=2, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
     def test_parse_no_drug(self):
         sig = "Take 1 pill 3 times a day"
         expected = StructuredSig(drug=None, form='pill', strength=None, frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
