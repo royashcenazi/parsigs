@@ -201,21 +201,21 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             form_from_dosage = _get_form_from_dosage_tag(text)
             if form_from_dosage is not None:
                 structured_sig.form = _to_singular(form_from_dosage)
-        if label == 'Drug':
+        elif label == 'Drug':
             structured_sig.drug = text
-        if label == 'Form':
+        elif label == 'Form':
             structured_sig.form = _to_singular(text)
-        if label == 'Frequency':
+        elif label == 'Frequency':
             structured_sig.frequencyType = _get_frequency_type(text)
             structured_sig.interval = _get_interval(text)
             # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
             if structured_sig.interval is None:
                 structured_sig.interval = 1
             structured_sig.takeAsNeeded = _should_take_as_needed(text)
-        if label == 'Duration':
+        elif label == 'Duration':
             structured_sig.periodType = _get_frequency_type(text)
             structured_sig.periodAmount = _get_interval(text)
-        if label == 'Strength':
+        elif label == 'Strength':
             structured_sig.strength = text
     return structured_sig
 
@@ -291,6 +291,8 @@ def _get_frequency_type(frequency):
             return "Week"
         if "month" in frequency:
             return "Month"
+        if "year" in frequency:
+            return "Year"
         if any(daily_instruction in frequency for daily_instruction in
                ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
             return "Day"
