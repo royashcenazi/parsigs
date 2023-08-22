@@ -221,16 +221,16 @@ def _create_structured_sig(model_entities, drug=None, form=None):
         label = entity.label_
         if label == "Dosage" and text.split()[0].isnumeric():
             _update_dosage_sig(structured_sig, text)
-        if label == "Drug":
+        elif label == "Drug":
             structured_sig.drug = text
-        if label == "Form":
+        elif label == "Form":
             structured_sig.form = _to_singular(text)
-        if label == "Frequency":
+        elif label == "Frequency":
             _update_frequency_sig(structured_sig, text)
-        if label == "Duration":
+        elif label == "Duration":
             structured_sig.period_type = _get_frequency_type(text)
             structured_sig.period_amount = _get_interval(text)
-        if label == "Strength":
+        elif label == "Strength":
             structured_sig.strength = text
     return structured_sig
 
@@ -326,6 +326,8 @@ def _get_frequency_type(frequency):
             return "Week"
         if "month" in frequency:
             return "Month"
+        if "year" in frequency:
+            return "Year"
         if any(
             daily_instruction in frequency
             for daily_instruction in (
