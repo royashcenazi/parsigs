@@ -47,21 +47,22 @@ sig_parser = SigParser()
 sig = "Take 1 tablet of ibuprofen 200mg 3 times every day for 3 weeks"
 parsed_sig = sig_parser.parse(sig)
 
-expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", interval=3, singleDosageAmount=1.0, periodType='Week', periodAmount=3, takeAsNeeded=False)
+expected = StructuredSig(drug="ibuprofen", form="tablet", strength="200mg", frequencyType="Day", times=3, interval=1, singleDosageAmount=1.0, periodType='Week', periodAmount=3, takeAsNeeded=False)
 
-sig2 = "Take 2 tablets 3 times every month"
+sig2 = "Take 2 tablets every 2 weeks"
 parsed_sig = sig_parser.parse(sig2)
 
-expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Month', interval=3, singleDosageAmount=2.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+expected = StructuredSig(drug=None, form='tablets', strength=None, frequencyType='Week', interval=2, singleDosageAmount=2.0, times=None, periodType=None, periodAmount=None, takeAsNeeded=False)
 ```
 
 The `StructuredSig` object has the following attributes:
 - `drug`: the name of the drug
 - `form`: the form of the medication (e.g. tablet, solution, pill)
 - `strength`: the strength of the medication (e.g. 200mg, 500mg)
-- `frequencyType`: the time-unit of the frequency (e.g. Day, Week, Month)
-- `interval`: the number of times per frequency time-unit
 - `singleDosageAmount`: the amount of the medication to take at each interval
+- `frequencyType`: the time-unit of the frequency (e.g. Day, Week, Month)
+- `times`: how many times a single dosage amount should be taken in a time unit
+- `interval`: if the instruction is every X days/hours/weeks/months - the X value is the interval
 - `periodType`: the unit-type of the period which indicates for how long medication should be taken (e.g. Day, Week, Month)
 - `periodAmount`: the number of units per `periodType`
 - `takeAsNeeded`: a flag indicating if the instructed dosage should be taken only when the patient needs it
