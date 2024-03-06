@@ -101,6 +101,13 @@ class TestParseSigApi(unittest.TestCase):
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
 
+    def test_parse_sig_capsules2(self):
+        sig = "Take 1 capsule by mouth twice daily (every 12 hours)"
+        expected = StructuredSig(drug=None, form="capsule", strength=None, frequencyType="Day", interval=1, times=2, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
+
     def test_parse_multiple_instructions(self):
         sig = "take 1 tablet of atorvastatin every day and then 2 tablets every week"
         first_expected = StructuredSig(drug="atorvastatin", form="tablet", strength=None, frequencyType="Day",
