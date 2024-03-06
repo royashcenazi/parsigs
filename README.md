@@ -68,7 +68,7 @@ The `StructuredSig` object has the following attributes:
 - `takeAsNeeded`: a flag indicating if the instructed dosage should be taken only when the patient needs it
 
 ## Known Issues
-The parse-sig project is developed using the Named Entity Recognition (NER) model for tagging different parts in a dosage instruction (Sig) sentence, including Duration, Frequency, Dosage, Drug, Form, and Strength. These tags are then processed using static rules. Due to the limited availability of private dosage data, some errors may be expected in the extracted information. The project is constantly evolving, and the developer plans to add a Dev set in the future along with more examples to improve accuracy.
+The parse-sig project is developed using the Named Entity Recognition (NER) model for tagging different parts in a dosage instruction (Sig) sentence, including Duration, Frequency, Dosage, Drug, Form, and Strength. These tags are then processed using static rules. Due to the limited availability of private dosage data, some errors may be expected in the extracted information. The project is constantly evolving, and we plan to add a Dev set in the future along with more examples to improve accuracy.
 
 While Parsigs aims to identify and structure dosage instructions effectively, it's worth noting that the identification of brand names as part of the definition may not be as complete as the extraction of frequency, dosage, and period information (as this data is often not explicitly provided in the Sig, e.g., "Take 1 tablet every day").
 
