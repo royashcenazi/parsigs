@@ -13,8 +13,6 @@ from spellchecker import SpellChecker
 
 
 import inflect
-# TODO handle multiple instructions in one sentence
-# TODO Create Pypi distribution
 
 """
 Represents a structured medication dosage instructions.
@@ -47,11 +45,12 @@ class StructuredSig:
     form: str
     strength: str
     frequencyType: str
-    interval: int
     singleDosageAmount: float
     periodType: str
     periodAmount: int
-    takeAsNeeded: bool
+    times: int
+    interval: int = 1
+    takeAsNeeded: bool = False
 
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
@@ -60,6 +59,7 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 default_model_name = "en_parsigs"
 
 inflect_engine = inflect.engine()
+
 
 def _create_spell_checker():
     sc = SpellChecker()
@@ -75,7 +75,7 @@ spell_checker = _create_spell_checker()
 @dataclass(frozen=True, eq=True)
 class _Frequency:
     frequencyType: str
-    interval: int
+    times: int
 
 
 # TODO add qXd support
@@ -184,13 +184,15 @@ def _get_form_from_dosage_tag(text):
     if len(splitted) == 2:
         return splitted[1]
 
+
 def _to_singular(text):
     # turn to singular if plural else keep as is
     singular = inflect_engine.singular_noun(text)
     return singular if singular else text
 
+
 def _create_structured_sig(model_entities, drug=None, form=None):
-    structured_sig = StructuredSig(drug, form, None, None, None, None, None, None, False)
+    structured_sig = StructuredSig(drug, form, None, None, None, None, None, None)
 
     for entity in model_entities:
         text = entity.text
@@ -207,17 +209,42 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             structured_sig.form = _to_singular(text)
         elif label == 'Frequency':
             structured_sig.frequencyType = _get_frequency_type(text)
-            structured_sig.interval = _get_interval(text)
+            interval_text = _get_string_after_keyword(text, "every")
+            if len(interval_text) > 0:
+                structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
+            else:
+                structured_sig.interval = 1
+
+            times_text = _get_string_until_keyword(text, "times")
+            structured_sig.times = _get_amount_from_frequency_tags(times_text)
+
+            if structured_sig.times is None:
+                structured_sig.times = _get_times_from_latin(text)
+
             # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
             if structured_sig.interval is None:
                 structured_sig.interval = 1
             structured_sig.takeAsNeeded = _should_take_as_needed(text)
         elif label == 'Duration':
             structured_sig.periodType = _get_frequency_type(text)
-            structured_sig.periodAmount = _get_interval(text)
+            structured_sig.periodAmount = _get_amount_from_frequency_tags(text)
         elif label == 'Strength':
             structured_sig.strength = text
     return structured_sig
+
+
+def _get_string_after_keyword(input_string: str, keyword: str):
+    keyword_index = input_string.find(keyword)
+    if keyword_index != -1:
+        return input_string[keyword_index + len(keyword):].strip()
+    return ""
+
+
+def _get_string_until_keyword(input_string: str, keyword: str):
+    keyword_index = input_string.find(keyword)
+    if keyword_index != -1:
+        return input_string[:keyword_index].strip()
+    return ""
 
 
 def _get_model_entities(model_output):
@@ -301,7 +328,7 @@ def _get_frequency_type(frequency):
             return latin_freq.frequencyType
 
 
-def _get_interval(frequency):
+def _get_amount_from_frequency_tags(frequency):
     if frequency is not None:
         for word in frequency.split():
             if word.isdigit():
@@ -309,9 +336,12 @@ def _get_interval(frequency):
         # every other TIME_UNIT means every 2 days,weeks etc
         if "other" in frequency:
             return 2
-        latin_freq = _get_latin_frequency(frequency)
-        if latin_freq:
-            return latin_freq.interval
+
+
+def _get_times_from_latin(frequency):
+    latin_freq = _get_latin_frequency(frequency)
+    if latin_freq:
+        return latin_freq.times
 
 
 def _get_latin_frequency(frequency):
