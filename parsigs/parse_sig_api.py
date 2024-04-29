@@ -14,7 +14,7 @@ from spellchecker import SpellChecker
 
 import inflect
 
-from generic import generic_drug
+from GenericDrugInformation import generic_drug
 
 """
 Represents a structured medication dosage instructions.
@@ -53,7 +53,7 @@ class StructuredSig:
     times: int
     interval: int = 1
     takeAsNeeded: bool = False
-    generic: generic_drug = None 
+    generic_data: generic_drug 
 
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
@@ -236,10 +236,8 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             structured_sig.strength = text
         
         #generic drug
-        structured_sig.generic = generic_drug()    
-        if structured_sig.drug is not None:
-            structured_sig.generic.set_generic_drug(structured_sig.drug,resources_path / 'drug_brands.csv')
-            
+        structured_sig.generic_data = generic_drug(structured_sig.drug,resources_path / 'drug_brands.csv')        
+                
     return structured_sig
 
 
