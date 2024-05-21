@@ -97,7 +97,7 @@ def _parse_sigs(sig_lst, model: Language):
     return _flatmap(_create_structured_sigs, model_outputs)
 
 def _parse_sig(sig: str, model: Language):
-    return _parse_sig([sig], model)
+    return _parse_sigs([sig], model)
 
 
 def _autocorrect(sig):
