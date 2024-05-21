@@ -92,14 +92,12 @@ The input string is pre processed, and than combining static rules and NER model
 
 
 def _parse_sigs(sig_lst, model: Language):
-    return _flatmap(lambda sig: _parse_sig(sig, model), sig_lst)
-
+    preprocessed_sigs = [_pre_process(sig) for sig in sig_lst]
+    model_outputs = [doc for doc in model.pipe(sig_preprocessed)]
+    return _flatmap(_create_structured_sigs, model_outputs)
 
 def _parse_sig(sig: str, model: Language):
-    sig_preprocessed = _pre_process(sig)
-    model_output = model(sig_preprocessed)
-
-    return _create_structured_sigs(model_output)
+    return _parse_sig([sig], model)
 
 
 def _autocorrect(sig):
