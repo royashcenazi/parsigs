@@ -93,7 +93,7 @@ The input string is pre processed, and than combining static rules and NER model
 
 def _parse_sigs(sig_lst, model: Language):
     preprocessed_sigs = [_pre_process(sig) for sig in sig_lst]
-    model_outputs = [doc for doc in model.pipe(sig_preprocessed)]
+    model_outputs = [doc for doc in model.pipe(preprocessed_sigs)]
     return _flatmap(_create_structured_sigs, model_outputs)
 
 def _parse_sig(sig: str, model: Language):
