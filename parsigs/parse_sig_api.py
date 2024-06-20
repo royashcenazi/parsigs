@@ -54,6 +54,7 @@ class StructuredSig:
 
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
+dose_forms = ["tablet", "puff", "pill", "capsule"]
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
 default_model_name = "en_parsigs"
@@ -118,7 +119,14 @@ def _autocorrect(sig):
 
 def _pre_process(sig):
     sig = _autocorrect(sig)
-    sig = sig.replace('twice', '2 times').replace("once", '1 time').replace("nightly", "every night")
+
+    replacements = {"twice": "2 times", "once": "1 time", "nightly": "every night"}
+    for form in dose_forms:
+        replacements["a " + form] = "1 " + form
+    
+    for substr_to_replace, replacement in replacements.items():
+        sig = sig.replace(substr_to_replace, replacement)
+
     sig = _add_space_around_parentheses(sig)
     # remove extra spaces between words
     sig = re.sub(r'\s+', ' ', sig)
