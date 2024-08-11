@@ -151,10 +151,10 @@ class TestParseSigApi(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_parse_multiple_instructions3(self):
-        sig = "take two tablets of benadryl every two days and then 1 tablet every week for 1 month and than 1 tablet every month"
+        sig = "take two tablets of benadryl every two days and then 1 tablet q.7.d for 1 month and than 1 tablet every month"
         first_expected = StructuredSig(drug="benadryl", form="tablet", strength=None, frequencyType="Day", interval=2,
                                        singleDosageAmount=2.0, periodType=None, times=None, periodAmount=None, takeAsNeeded=False)
-        second_expected = StructuredSig(drug="benadryl", form="tablet", strength=None, times=None, frequencyType='Week', interval=1,
+        second_expected = StructuredSig(drug="benadryl", form="tablet", strength=None, times=1, frequencyType='Day', interval=7,
                                         singleDosageAmount=1.0, periodType='Month', periodAmount=1, takeAsNeeded=False)
         third_expected = StructuredSig(drug="benadryl", form="tablet", strength=None, frequencyType='Month', interval=1,
                                        singleDosageAmount=1.0, periodType=None, times=None, periodAmount=None, takeAsNeeded=False)
