@@ -30,13 +30,13 @@ class TestParseSigApi(unittest.TestCase):
     #     self.assertEqual(result, expected)
     def test_parse_sig_period(self):
         sig = "Take 2 tabs of amoxicillin 500mg every 12 days for 10 days"
-        expected = StructuredSig(drug="amoxicillin", form="tab", strength="500mg", times=None, frequencyType="Day", interval=12, singleDosageAmount=2.0, periodType="Day", periodAmount=10, takeAsNeeded=False)
+        expected = StructuredSig(drug="amoxicillin", form="tablet", strength="500mg", times=None, frequencyType="Day", interval=12, singleDosageAmount=2.0, periodType="Day", periodAmount=10, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
 
     def test_parse_sig_period_year(self):
         sig = "Take 2 tabs of amoxicillin 500mg every 12 days for 2 years"
-        expected = StructuredSig(drug="amoxicillin", form="tab", strength="500mg", frequencyType="Day", interval=12, 
+        expected = StructuredSig(drug="amoxicillin", form="tablet", strength="500mg", frequencyType="Day", interval=12,
                                  singleDosageAmount=2.0, periodType="Year", periodAmount=2, takeAsNeeded=False, times=None)
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
@@ -94,6 +94,26 @@ class TestParseSigApi(unittest.TestCase):
         expected = StructuredSig(drug="benadryl", form='tablet', strength=None, interval=1, frequencyType="Day", times=1, singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
+
+    def test_parse_sig_latin3(self):  # test the latin hour abbreviation q_h (take every _ hours)
+        sig = "1 TAB of BENADRYL q7h times for 2 weeks"  # note that adding 'for a week' doesn't work
+        expected = StructuredSig(drug="benadryl", form='tablet', strength=None, interval=7, frequencyType="Hour", times=1, singleDosageAmount=1.0, periodType="Week", periodAmount=2, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
+    def test_parse_sig_latin4(self):  # note that without 'take' it does not work
+        sig = "take 4 TABS q.4.d for 4 weeks"
+        expected = StructuredSig(drug=None, form='tablet', strength=None, interval=4, frequencyType="Day", times=1, singleDosageAmount=4.0, periodType="Week", periodAmount=4, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
+    def test_parse_sig_latin5(self):
+        sig = "Take 3 capsules by mouth q12h"
+        expected = StructuredSig(drug=None, form='capsule', strength=None, interval=12, frequencyType="Hour", times=1, singleDosageAmount=3.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
+
+
 
     def test_parse_sig_capsules(self):
         sig = "Take 2 capsules of amoxicillin 500mg"

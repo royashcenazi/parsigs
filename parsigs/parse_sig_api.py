@@ -78,6 +78,13 @@ class _Frequency:
     times: int
 
 
+@dataclass(frozen=True, eq=True)
+class _QXD_Frequency:
+    frequencyType: str
+    times: int  # is always 1 so maybe not needed
+    interval: int
+
+
 # TODO add qXd support
 latin_frequency_types = {"qd": _Frequency("Day", 1), "bid": _Frequency("Day", 2), "tid": _Frequency("Day", 3),
                          "qid": _Frequency("Day", 4)}
@@ -127,9 +134,9 @@ def _pre_process(sig):
     for word in words:
         if word == 'tab':
             word = word.replace('tab', 'tablet')
-            output_words.append(word)
-        else:
-            output_words.append(word)
+        elif word == 'tabs':
+            word = word.replace('tabs', 'tablet')
+        output_words.append(word)
     sig = ' '.join(output_words)
     sig = _convert_words_to_numbers(sig)
     return _convert_fract_to_num(sig)
@@ -212,8 +219,13 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             interval_text = _get_string_after_keyword(text, "every")
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
-            else:
-                structured_sig.interval = 1
+            else:  # if interval not in shape of 'every x amount of time' then either 1 or latin text
+                freq_latin = _get_latin_frequency(text)
+                if isinstance(freq_latin, _QXD_Frequency):
+                    structured_sig.interval = freq_latin.interval
+                    structured_sig.times = 1
+                else:
+                    structured_sig.interval = 1
 
             times_text = _get_string_until_keyword(text, "times")
             structured_sig.times = _get_amount_from_frequency_tags(times_text)
@@ -223,7 +235,7 @@ def _create_structured_sig(model_entities, drug=None, form=None):
 
             # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
             if structured_sig.interval is None:
-                structured_sig.interval = 1
+                structured_sig.interval = _get_interval_from_latin(text)  # includes that interval will be 1 if not found in latin
             structured_sig.takeAsNeeded = _should_take_as_needed(text)
         elif label == 'Duration':
             structured_sig.periodType = _get_frequency_type(text)
@@ -325,7 +337,7 @@ def _get_frequency_type(frequency):
             return "Day"
         latin_freq = _get_latin_frequency(frequency)
         if latin_freq:
-            return latin_freq.frequencyType
+            return latin_freq.frequencyType  # should work both for _Frequency and _QXD_Frequency object types
 
 
 def _get_amount_from_frequency_tags(frequency):
@@ -336,6 +348,8 @@ def _get_amount_from_frequency_tags(frequency):
         # every other TIME_UNIT means every 2 days,weeks etc
         if "other" in frequency:
             return 2
+        if "a" in frequency:  # Yoad changed: for example 'for a week' is for one week
+            return 1
 
 
 def _get_times_from_latin(frequency):
@@ -344,10 +358,43 @@ def _get_times_from_latin(frequency):
         return latin_freq.times
 
 
+def _get_interval_from_latin(frequency):  # yoad added this for cases like qxd/qxh (the interval changes and times is 1)
+    latin_freq = _get_latin_frequency(frequency)
+    if latin_freq:
+        return latin_freq.interval
+    else:
+        return 1
+
+
 def _get_latin_frequency(frequency):
     for latin_freq in latin_frequency_types.keys():
         if latin_freq in frequency:
             return latin_frequency_types[latin_freq]
+        # yoad added from here
+    for word in frequency.split(" "):
+        match_list = split_string_qx(word)
+        if is_latin_hour_abbreviation(match_list):
+            return _QXD_Frequency("Hour", 1, int(match_list[1]))  # the 1 index is the hour for example q4h is once every 4 hours
+        if is_latin_day_abbreviation(match_list):
+            return _QXD_Frequency("Day", 1,int(match_list[1]))  # the 1 index is the day for example q4d is once every 4 days
+
+
+def split_string_qx(string):
+    """Splits a string of the format 'q[number][h|d]' into three parts."""
+    string = string.replace('.', '')
+    match = re.match(r'([qQ])(\d+)([hHdD])', string)  # q or Q followed by number followed by either (h,H,d,D) hour/day
+    if match:
+        return list(match.groups())
+    else:
+        return None  # Or handle invalid strings as needed
+
+
+def is_latin_hour_abbreviation(frequency):
+    return frequency is not None and len(frequency) == 3 and frequency[0] == 'q' and frequency[1].isdigit() and frequency[2] == 'h'
+
+
+def is_latin_day_abbreviation(frequency):
+    return frequency is not None and len(frequency) == 3 and frequency[0] == 'q' and frequency[1].isdigit() and frequency[2] == 'd'
 
 
 def _should_take_as_needed(frequency):
