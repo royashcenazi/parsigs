@@ -10,8 +10,7 @@ from itertools import chain
 import copy
 import os
 from spellchecker import SpellChecker
-
-
+import json
 import inflect
 
 """
@@ -61,6 +60,13 @@ default_model_name = "en_parsigs"
 inflect_engine = inflect.engine()
 
 
+def read_json_file():  # add parameters path, name
+    base_dir1 = os.path.dirname(__file__)
+    file_path1 = os.path.join(base_dir1, 'frequency_mapping.json')
+    with open(file_path1, 'r') as file1:
+        return json.load(file1)
+
+
 def _create_spell_checker():
     sc = SpellChecker()
     drug_words_frequency = Path(__file__).parent / 'resources/drug_names.txt'
@@ -73,21 +79,19 @@ spell_checker = _create_spell_checker()
 
 
 @dataclass(frozen=True, eq=True)
-class _Frequency:
+class Frequency:
     frequencyType: str
     times: int
 
 
 @dataclass(frozen=True, eq=True)
-class _QXD_Frequency:
+class QXFrequency:
     frequencyType: str
-    times: int  # is always 1 so maybe not needed
     interval: int
 
 
-# TODO add qXd support
-latin_frequency_types = {"qd": _Frequency("Day", 1), "bid": _Frequency("Day", 2), "tid": _Frequency("Day", 3),
-                         "qid": _Frequency("Day", 4)}
+latin_frequency_types = {"qd": Frequency("Day", 1), "bid": Frequency("Day", 2), "tid": Frequency("Day", 3),
+                         "qid": Frequency("Day", 4), "qw": Frequency("Week", 1), "qwk": Frequency("Week", 1)}
 
 
 def _flatmap(func, iterable):
@@ -217,18 +221,19 @@ def _create_structured_sig(model_entities, drug=None, form=None):
         elif label == 'Frequency':
             structured_sig.frequencyType = _get_frequency_type(text)
             interval_text = _get_string_after_keyword(text, "every")
+            latin_json = read_json_file()
+            latin_qx = _get_qx_interval(text, latin_json)
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
-            else:  # if interval not in shape of 'every x amount of time' then either 1 or latin text
-                freq_latin = _get_latin_frequency(text)
-                if isinstance(freq_latin, _QXD_Frequency):
-                    structured_sig.interval = freq_latin.interval
-                    structured_sig.times = 1
-                else:
-                    structured_sig.interval = 1
-
-            times_text = _get_string_until_keyword(text, "times")
-            structured_sig.times = _get_amount_from_frequency_tags(times_text)
+            else:
+                structured_sig.interval = 1
+            if latin_qx:
+                structured_sig.interval = latin_qx.interval  # then either 1 or latin text
+                structured_sig.frequencyType = latin_qx.frequencyType
+                structured_sig.times = 1
+            else:
+                times_text = _get_string_until_keyword(text, "times")
+                structured_sig.times = _get_amount_from_frequency_tags(times_text)
 
             if structured_sig.times is None:
                 structured_sig.times = _get_times_from_latin(text)
@@ -337,7 +342,7 @@ def _get_frequency_type(frequency):
             return "Day"
         latin_freq = _get_latin_frequency(frequency)
         if latin_freq:
-            return latin_freq.frequencyType  # should work both for _Frequency and _QXD_Frequency object types
+            return latin_freq.frequencyType
 
 
 def _get_amount_from_frequency_tags(frequency):
@@ -348,8 +353,7 @@ def _get_amount_from_frequency_tags(frequency):
         # every other TIME_UNIT means every 2 days,weeks etc
         if "other" in frequency:
             return 2
-        if "a" in frequency:  # Yoad changed: for example 'for a week' is for one week
-            return 1
+
 
 
 def _get_times_from_latin(frequency):
@@ -358,7 +362,7 @@ def _get_times_from_latin(frequency):
         return latin_freq.times
 
 
-def _get_interval_from_latin(frequency):  # yoad added this for cases like qxd/qxh (the interval changes and times is 1)
+def _get_interval_from_latin(frequency):  # for cases like qxd/qxh (the interval changes and times is 1)
     latin_freq = _get_latin_frequency(frequency)
     if latin_freq:
         return latin_freq.interval
@@ -368,33 +372,16 @@ def _get_interval_from_latin(frequency):  # yoad added this for cases like qxd/q
 
 def _get_latin_frequency(frequency):
     for latin_freq in latin_frequency_types.keys():
-        if latin_freq in frequency:
-            return latin_frequency_types[latin_freq]
-        # yoad added from here
-    for word in frequency.split(" "):
-        match_list = split_string_qx(word)
-        if is_latin_hour_abbreviation(match_list):
-            return _QXD_Frequency("Hour", 1, int(match_list[1]))  # the 1 index is the hour for example q4h is once every 4 hours
-        if is_latin_day_abbreviation(match_list):
-            return _QXD_Frequency("Day", 1,int(match_list[1]))  # the 1 index is the day for example q4d is once every 4 days
+        final_freq = latin_freq.lower().replace('.', '')
+        if final_freq in frequency:
+            return latin_frequency_types[final_freq]
 
 
-def split_string_qx(string):
-    """Splits a string of the format 'q[number][h|d]' into three parts."""
-    string = string.replace('.', '')
-    match = re.match(r'([qQ])(\d+)([hHdD])', string)  # q or Q followed by number followed by either (h,H,d,D) hour/day
-    if match:
-        return list(match.groups())
-    else:
-        return None  # Or handle invalid strings as needed
-
-
-def is_latin_hour_abbreviation(frequency):
-    return frequency is not None and len(frequency) == 3 and frequency[0] == 'q' and frequency[1].isdigit() and frequency[2] == 'h'
-
-
-def is_latin_day_abbreviation(frequency):
-    return frequency is not None and len(frequency) == 3 and frequency[0] == 'q' and frequency[1].isdigit() and frequency[2] == 'd'
+def _get_qx_interval(frequency, latin_json):
+    for latin_abv in latin_json:
+        final_freq = frequency.lower().replace('.', '')  # abbreviation sometimes referred with '.' inbetween or capitalized
+        if latin_abv in final_freq:
+            return QXFrequency(latin_json[latin_abv]["frequencyType"], int(latin_json[latin_abv]["interval"]))
 
 
 def _should_take_as_needed(frequency):
