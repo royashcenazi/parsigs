@@ -218,8 +218,6 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             interval_text = _get_string_after_keyword(text, "every")
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
-            if structured_sig.interval is None:
-                structured_sig.interval = 1
             latin_qx = _get_latin_frequency(text)
             if latin_qx:
                 # updates the _Frequency attributes of latin_qx into the structured_sig object
@@ -227,6 +225,8 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             else:
                 times_text = _get_string_until_keyword(text, "times")
                 structured_sig.times = _get_amount_from_frequency_tags(times_text)
+            if structured_sig.interval is None:
+                structured_sig.interval = 1
             structured_sig.takeAsNeeded = _should_take_as_needed(text)
         elif label == 'Duration':
             structured_sig.periodType = _get_frequency_type(text)
