@@ -6,7 +6,7 @@ from word2number import w2n
 import re
 from spacy import Language
 from itertools import chain
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import copy
 import os
 from spellchecker import SpellChecker
@@ -52,6 +52,13 @@ class StructuredSig:
     takeAsNeeded: bool = False
 
 
+@dataclass(frozen=True, eq=True)
+class _Frequency:
+    frequencyType: str
+    interval: int
+    times: int
+
+
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
@@ -79,23 +86,6 @@ def _create_spell_checker():
 
 
 spell_checker = _create_spell_checker()
-
-
-@dataclass(frozen=True, eq=True)
-class Frequency:
-    frequencyType: str
-    interval: int
-    times: int
-
-
-# @dataclass(frozen=True, eq=True)
-# class Frequency:
-#     frequencyType: str
-#     interval: int
-
-
-# latin_frequency_types = {"qd": Frequency("Day", 1, 1), "bid": Frequency("Day", 2, 2), "tid": Frequency("Day", 3, 3),
-#                          "qid": Frequency("Day", 4, 4), "qw": Frequency("Week", 1, 1), "qwk": Frequency("Week", 1, 1)}
 
 
 def _flatmap(func, iterable):
@@ -230,21 +220,13 @@ def _create_structured_sig(model_entities, drug=None, form=None):
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
             if structured_sig.interval is None:
                 structured_sig.interval = 1
-            latin_qx = _get_latin_frequency_new(text)
+            latin_qx = _get_latin_frequency(text)
             if latin_qx:
-                structured_sig.interval = latin_qx.interval
-                structured_sig.frequencyType = latin_qx.frequencyType
-                structured_sig.times = latin_qx.times
+                # updates the _Frequency attributes of latin_qx into the structured_sig object
+                structured_sig = replace(structured_sig, **latin_qx.__dict__)
             else:
                 times_text = _get_string_until_keyword(text, "times")
                 structured_sig.times = _get_amount_from_frequency_tags(times_text)
-
-            # if structured_sig.times is None:
-            #     structured_sig.times = _get_times_from_latin(text)
-
-            # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
-            # if structured_sig.interval is None:
-            #     structured_sig.interval = _get_interval_from_latin(text)  # includes that interval will be 1 if not found in latin
             structured_sig.takeAsNeeded = _should_take_as_needed(text)
         elif label == 'Duration':
             structured_sig.periodType = _get_frequency_type(text)
@@ -344,9 +326,6 @@ def _get_frequency_type(frequency):
         if any(daily_instruction in frequency for daily_instruction in
                ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
             return "Day"
-        # latin_freq = _get_latin_frequency(frequency)
-        # if latin_freq:
-        #     return latin_freq.frequencyType
 
 
 def _get_amount_from_frequency_tags(frequency):
@@ -359,40 +338,11 @@ def _get_amount_from_frequency_tags(frequency):
             return 2
 
 
-# def _get_times_from_latin(frequency):
-#     latin_freq = _get_latin_frequency(frequency)
-#     if latin_freq:
-#         return latin_freq.times
-
-
-# def _get_interval_from_latin(frequency):  # for cases like qxd/qxh (the interval changes and times is 1)
-#     latin_freq = _get_latin_frequency(frequency)
-#     if latin_freq:
-#         return latin_freq.interval
-#     else:
-#         return 1
-
-
-# def _get_latin_frequency(frequency):
-#     for latin_freq in latin_frequency_types.keys():
-#         stripped_freq = latin_freq.replace('.', '')
-#         if stripped_freq in frequency:
-#             return latin_frequency_types[stripped_freq]
-
-
-def _get_latin_frequency_new(frequency):
+def _get_latin_frequency(frequency: str):
     for latin_freq in latin_type_dict:
         stripped_freq = frequency.split()[0].replace('.', '')
         if stripped_freq == latin_freq:
-            return Frequency(**latin_type_dict[latin_freq])
-            # return Frequency(latin_type_dict[latin_freq]['frequencyType'], latin_type_dict[latin_freq]['interval'], latin_type_dict[latin_freq]['times'])
-
-
-def _get_qx_interval(frequency, latin_json):
-    for latin_abv in latin_json:
-        final_freq = frequency.replace('.', '')  # abbreviation sometimes referred with '.' inbetween or capitalized
-        if latin_abv in final_freq:
-            return Frequency(latin_json[latin_abv]["frequencyType"], int(latin_json[latin_abv]["interval"]))
+            return _Frequency(**latin_type_dict[latin_freq])
 
 
 def _should_take_as_needed(frequency):
