@@ -60,11 +60,14 @@ default_model_name = "en_parsigs"
 inflect_engine = inflect.engine()
 
 
-def read_json_file():  # add parameters path, name
-    base_dir1 = os.path.dirname(__file__)
-    file_path1 = os.path.join(base_dir1, 'frequency_mapping.json')
-    with open(file_path1, 'r') as file1:
+def latin_type_dict():  # add parameters path, name
+    base_dir = os.path.dirname(__file__)
+    file_path = os.path.join(base_dir, 'frequency_mapping.json')
+    with open(file_path, 'r') as file1:
         return json.load(file1)
+
+
+latin_type_dict = latin_type_dict()
 
 
 def _create_spell_checker():
@@ -81,17 +84,18 @@ spell_checker = _create_spell_checker()
 @dataclass(frozen=True, eq=True)
 class Frequency:
     frequencyType: str
+    interval: int
     times: int
 
 
-@dataclass(frozen=True, eq=True)
-class QXFrequency:
-    frequencyType: str
-    interval: int
+# @dataclass(frozen=True, eq=True)
+# class Frequency:
+#     frequencyType: str
+#     interval: int
 
 
-latin_frequency_types = {"qd": Frequency("Day", 1), "bid": Frequency("Day", 2), "tid": Frequency("Day", 3),
-                         "qid": Frequency("Day", 4), "qw": Frequency("Week", 1), "qwk": Frequency("Week", 1)}
+latin_frequency_types = {"qd": Frequency("Day", 1, 1), "bid": Frequency("Day", 2, 2), "tid": Frequency("Day", 3, 3),
+                         "qid": Frequency("Day", 4, 4), "qw": Frequency("Week", 1, 1), "qwk": Frequency("Week", 1, 1)}
 
 
 def _flatmap(func, iterable):
@@ -221,12 +225,11 @@ def _create_structured_sig(model_entities, drug=None, form=None):
         elif label == 'Frequency':
             structured_sig.frequencyType = _get_frequency_type(text)
             interval_text = _get_string_after_keyword(text, "every")
-            latin_json = read_json_file()
-            latin_qx = _get_qx_interval(text, latin_json)
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
             else:
                 structured_sig.interval = 1
+            latin_qx = _get_qx_interval(text, latin_type_dict())
             if latin_qx:
                 structured_sig.interval = latin_qx.interval  # then either 1 or latin text
                 structured_sig.frequencyType = latin_qx.frequencyType
@@ -355,7 +358,6 @@ def _get_amount_from_frequency_tags(frequency):
             return 2
 
 
-
 def _get_times_from_latin(frequency):
     latin_freq = _get_latin_frequency(frequency)
     if latin_freq:
@@ -372,16 +374,23 @@ def _get_interval_from_latin(frequency):  # for cases like qxd/qxh (the interval
 
 def _get_latin_frequency(frequency):
     for latin_freq in latin_frequency_types.keys():
-        final_freq = latin_freq.lower().replace('.', '')
-        if final_freq in frequency:
-            return latin_frequency_types[final_freq]
+        stripped_freq = latin_freq.replace('.', '')
+        if stripped_freq in frequency:
+            return latin_frequency_types[stripped_freq]
+
+
+def _get_latin_frequency_new(frequency):
+    for latin_freq in latin_type_dict.values():
+        stripped_freq = latin_freq.replace('.', '')
+        if stripped_freq in frequency:
+            return 1
 
 
 def _get_qx_interval(frequency, latin_json):
     for latin_abv in latin_json:
-        final_freq = frequency.lower().replace('.', '')  # abbreviation sometimes referred with '.' inbetween or capitalized
+        final_freq = frequency.replace('.', '')  # abbreviation sometimes referred with '.' inbetween or capitalized
         if latin_abv in final_freq:
-            return QXFrequency(latin_json[latin_abv]["frequencyType"], int(latin_json[latin_abv]["interval"]))
+            return Frequency(latin_json[latin_abv]["frequencyType"], int(latin_json[latin_abv]["interval"]))
 
 
 def _should_take_as_needed(frequency):
