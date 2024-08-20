@@ -68,9 +68,9 @@ inflect_engine = inflect.engine()
 
 
 def _open_latin_type_dict():  # add parameters path, name
-    base_dir = os.path.dirname(__file__)
-    file_path = os.path.join(base_dir, 'frequency_mapping.json')
-    with open(file_path, 'r') as file1:
+    latin_frequency_base_dir = os.path.dirname(__file__)
+    latin_frequency_file_path = os.path.join(latin_frequency_base_dir, 'latin_frequency.json')
+    with open(latin_frequency_file_path, 'r') as file1:
         return json.load(file1)
 
 
@@ -181,7 +181,6 @@ def _create_structured_sigs(model_output):
     # incase multiple instructions exist, they apply to the same drug and form
     other_sigs = [_create_structured_sig(instruction_entities, first_sig.drug, first_sig.form)
                   for instruction_entities in multiple_instructions[1:]]
-
     return [first_sig] + other_sigs
 
 
@@ -218,10 +217,10 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             interval_text = _get_string_after_keyword(text, "every")
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
-            latin_qx = _get_latin_frequency(text)
-            if latin_qx:
-                # updates the _Frequency attributes of latin_qx into the structured_sig object
-                structured_sig = replace(structured_sig, **latin_qx.__dict__)
+            latin_frequency_object = _get_latin_frequency(text)
+            if latin_frequency_object:
+                # updates the _Frequency attributes of latin_frequency_object into the structured_sig object
+                structured_sig = replace(structured_sig, **latin_frequency_object.__dict__)
             else:
                 times_text = _get_string_until_keyword(text, "times")
                 structured_sig.times = _get_amount_from_frequency_tags(times_text)
