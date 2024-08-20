@@ -3,10 +3,10 @@ from pathlib import Path
 
 import spacy
 from word2number import w2n
-from dataclasses import dataclass
 import re
 from spacy import Language
 from itertools import chain
+from dataclasses import dataclass
 import copy
 import os
 from spellchecker import SpellChecker
@@ -100,6 +100,8 @@ class Frequency:
 
 def _flatmap(func, iterable):
     return list(chain.from_iterable(map(func, iterable)))
+
+
 """
 Converts a medication dosage instructions string to a StructuredSig object.
 The input string is pre processed, and than combining static rules and NER model outputs, a StructuredSig object is created.
@@ -180,7 +182,6 @@ def _split_entities_for_multiple_instructions(model_entities):
 
 
 def _create_structured_sigs(model_output):
-
     entities = _get_model_entities(model_output)
 
     multiple_instructions = _split_entities_for_multiple_instructions(entities)
@@ -227,7 +228,7 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             interval_text = _get_string_after_keyword(text, "every")
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
-            if structured_sig.interval == None:
+            if structured_sig.interval is None:
                 structured_sig.interval = 1
             latin_qx = _get_latin_frequency_new(text)
             if latin_qx:
@@ -383,7 +384,8 @@ def _get_latin_frequency_new(frequency):
     for latin_freq in latin_type_dict:
         stripped_freq = frequency.split()[0].replace('.', '')
         if stripped_freq == latin_freq:
-            return Frequency(latin_type_dict[latin_freq]['frequencyType'], latin_type_dict[latin_freq]['interval'], latin_type_dict[latin_freq]['times'])
+            return Frequency(**latin_type_dict[latin_freq])
+            # return Frequency(latin_type_dict[latin_freq]['frequencyType'], latin_type_dict[latin_freq]['interval'], latin_type_dict[latin_freq]['times'])
 
 
 def _get_qx_interval(frequency, latin_json):
