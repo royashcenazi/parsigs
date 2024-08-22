@@ -215,6 +215,7 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             else:
                 times_text = _get_string_until_keyword(text, "times")
                 structured_sig.times = _get_amount_from_frequency_tags(times_text)
+            # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
             if structured_sig.interval is None:
                 structured_sig.interval = 1
             structured_sig.takeAsNeeded = _should_take_as_needed(text)
