@@ -52,13 +52,6 @@ class StructuredSig:
     takeAsNeeded: bool = False
 
 
-@dataclass(frozen=True, eq=True)
-class _Frequency:
-    frequencyType: str
-    interval: int
-    times: int
-
-
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
 number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
 
@@ -218,8 +211,7 @@ def _create_structured_sig(model_entities, drug=None, form=None):
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
             latin_frequency_object = _get_latin_frequency(text)
             if latin_frequency_object:
-                # updates the _Frequency attributes of latin_frequency_object into the structured_sig object
-                structured_sig = replace(structured_sig, **latin_frequency_object.__dict__)
+                structured_sig = replace(structured_sig, **latin_frequency_object)
             else:
                 times_text = _get_string_until_keyword(text, "times")
                 structured_sig.times = _get_amount_from_frequency_tags(times_text)
@@ -338,7 +330,7 @@ def _get_amount_from_frequency_tags(frequency):
 
 def _get_latin_frequency(frequency: str):
     stripped_freq = frequency.split()[0].replace('.', '')
-    return _Frequency(**latin_type_dict.get(stripped_freq)) if latin_type_dict.get(stripped_freq) else None
+    return latin_type_dict.get(stripped_freq) if latin_type_dict.get(stripped_freq) else None
 
 
 def _should_take_as_needed(frequency):
