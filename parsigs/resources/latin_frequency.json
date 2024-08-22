@@ -303,5 +303,20 @@
         "frequencyType": "Week",
         "interval": 1,
         "times": 1
+    },
+    "biw": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 2
+    },
+    "tiw": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 3
+    },
+    "qiw": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 4
     }
 }

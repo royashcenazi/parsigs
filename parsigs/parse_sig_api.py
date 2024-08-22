@@ -69,8 +69,8 @@ inflect_engine = inflect.engine()
 
 def _open_latin_type_dict():  # add parameters path, name
     latin_frequency_file_path = Path(__file__).parent / 'resources/latin_frequency.json'
-    with open(latin_frequency_file_path, 'r') as file1:
-        return json.load(file1)
+    with open(latin_frequency_file_path, 'r') as latin_file:
+        return json.load(latin_file)
 
 
 latin_type_dict = _open_latin_type_dict()
@@ -337,10 +337,8 @@ def _get_amount_from_frequency_tags(frequency):
 
 
 def _get_latin_frequency(frequency: str):
-    for latin_freq in latin_type_dict:
-        stripped_freq = frequency.split()[0].replace('.', '')
-        if stripped_freq == latin_freq:
-            return _Frequency(**latin_type_dict[latin_freq])
+    stripped_freq = frequency.split()[0].replace('.', '')
+    return _Frequency(**latin_type_dict.get(stripped_freq)) if latin_type_dict.get(stripped_freq) else None
 
 
 def _should_take_as_needed(frequency):
