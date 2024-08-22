@@ -68,7 +68,7 @@ inflect_engine = inflect.engine()
 
 
 def _open_latin_type_dict():  # add parameters path, name
-    latin_frequency_file_path = Path(__file__).parent / 'resources/latin_frequency.txt'
+    latin_frequency_file_path = Path(__file__).parent / 'resources/latin_frequency.json'
     with open(latin_frequency_file_path, 'r') as file1:
         return json.load(file1)
 
