@@ -3,3 +3,5 @@ word2number
 pyspellchecker<= 0.5.5
 inflect
 hypothesis
+pip==24.0
+dataclasses

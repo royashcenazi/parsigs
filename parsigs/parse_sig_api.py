@@ -3,15 +3,14 @@ from pathlib import Path
 
 import spacy
 from word2number import w2n
-from dataclasses import dataclass
 import re
 from spacy import Language
 from itertools import chain
+from dataclasses import dataclass, replace
 import copy
 import os
 from spellchecker import SpellChecker
-
-
+import json
 import inflect
 
 """
@@ -61,6 +60,15 @@ default_model_name = "en_parsigs"
 inflect_engine = inflect.engine()
 
 
+def _open_latin_type_dict():  # add parameters path, name
+    latin_frequency_file_path = Path(__file__).parent / 'resources/latin_frequency.json'
+    with open(latin_frequency_file_path, 'r') as latin_file:
+        return json.load(latin_file)
+
+
+latin_type_dict = _open_latin_type_dict()
+
+
 def _create_spell_checker():
     sc = SpellChecker()
     drug_words_frequency = Path(__file__).parent / 'resources/drug_names.txt'
@@ -72,19 +80,10 @@ def _create_spell_checker():
 spell_checker = _create_spell_checker()
 
 
-@dataclass(frozen=True, eq=True)
-class _Frequency:
-    frequencyType: str
-    times: int
-
-
-# TODO add qXd support
-latin_frequency_types = {"qd": _Frequency("Day", 1), "bid": _Frequency("Day", 2), "tid": _Frequency("Day", 3),
-                         "qid": _Frequency("Day", 4)}
-
-
 def _flatmap(func, iterable):
     return list(chain.from_iterable(map(func, iterable)))
+
+
 """
 Converts a medication dosage instructions string to a StructuredSig object.
 The input string is pre processed, and than combining static rules and NER model outputs, a StructuredSig object is created.
@@ -127,9 +126,9 @@ def _pre_process(sig):
     for word in words:
         if word == 'tab':
             word = word.replace('tab', 'tablet')
-            output_words.append(word)
-        else:
-            output_words.append(word)
+        elif word == 'tabs':
+            word = word.replace('tabs', 'tablet')
+        output_words.append(word)
     sig = ' '.join(output_words)
     sig = _convert_words_to_numbers(sig)
     return _convert_fract_to_num(sig)
@@ -165,7 +164,6 @@ def _split_entities_for_multiple_instructions(model_entities):
 
 
 def _create_structured_sigs(model_output):
-
     entities = _get_model_entities(model_output)
 
     multiple_instructions = _split_entities_for_multiple_instructions(entities)
@@ -175,7 +173,6 @@ def _create_structured_sigs(model_output):
     # incase multiple instructions exist, they apply to the same drug and form
     other_sigs = [_create_structured_sig(instruction_entities, first_sig.drug, first_sig.form)
                   for instruction_entities in multiple_instructions[1:]]
-
     return [first_sig] + other_sigs
 
 
@@ -212,15 +209,13 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             interval_text = _get_string_after_keyword(text, "every")
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
+            latin_frequency_dict = _get_latin_frequency(text)
+            if latin_frequency_dict:
+                # we assume that the latin_frequency_dict values are a dict of frequencyType, interval and times
+                structured_sig = replace(structured_sig, **latin_frequency_dict)
             else:
-                structured_sig.interval = 1
-
-            times_text = _get_string_until_keyword(text, "times")
-            structured_sig.times = _get_amount_from_frequency_tags(times_text)
-
-            if structured_sig.times is None:
-                structured_sig.times = _get_times_from_latin(text)
-
+                times_text = _get_string_until_keyword(text, "times")
+                structured_sig.times = _get_amount_from_frequency_tags(times_text)
             # Default added only if there is a frequency tag in the sig, handles cases such as "Every TIME_UNIT"
             if structured_sig.interval is None:
                 structured_sig.interval = 1
@@ -323,9 +318,6 @@ def _get_frequency_type(frequency):
         if any(daily_instruction in frequency for daily_instruction in
                ("day", "daily", "night", "morning", "evening", "noon", "bedtime")):
             return "Day"
-        latin_freq = _get_latin_frequency(frequency)
-        if latin_freq:
-            return latin_freq.frequencyType
 
 
 def _get_amount_from_frequency_tags(frequency):
@@ -338,16 +330,9 @@ def _get_amount_from_frequency_tags(frequency):
             return 2
 
 
-def _get_times_from_latin(frequency):
-    latin_freq = _get_latin_frequency(frequency)
-    if latin_freq:
-        return latin_freq.times
-
-
-def _get_latin_frequency(frequency):
-    for latin_freq in latin_frequency_types.keys():
-        if latin_freq in frequency:
-            return latin_frequency_types[latin_freq]
+def _get_latin_frequency(frequency: str):
+    stripped_freq = frequency.split()[0].replace('.', '')
+    return latin_type_dict.get(stripped_freq) if latin_type_dict.get(stripped_freq) else None
 
 
 def _should_take_as_needed(frequency):

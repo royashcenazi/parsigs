@@ -1,0 +1,327 @@
+{
+    "q1h": {
+        "frequencyType": "Hour",
+        "interval": 1,
+        "times": 1
+    },
+    "q2h": {
+        "frequencyType": "Hour",
+        "interval": 2,
+        "times": 1
+    },
+    "q3h": {
+        "frequencyType": "Hour",
+        "interval": 3,
+        "times": 1
+    },
+    "q4h": {
+        "frequencyType": "Hour",
+        "interval": 4,
+        "times": 1
+    },
+    "q5h": {
+        "frequencyType": "Hour",
+        "interval": 5,
+        "times": 1
+    },
+    "q6h": {
+        "frequencyType": "Hour",
+        "interval": 6,
+        "times": 1
+    },
+    "q7h": {
+        "frequencyType": "Hour",
+        "interval": 7,
+        "times": 1
+    },
+    "q8h": {
+        "frequencyType": "Hour",
+        "interval": 8,
+        "times": 1
+    },
+    "q9h": {
+        "frequencyType": "Hour",
+        "interval": 9,
+        "times": 1
+    },
+    "q10h": {
+        "frequencyType": "Hour",
+        "interval": 10,
+        "times": 1
+    },
+    "q11h": {
+        "frequencyType": "Hour",
+        "interval": 11,
+        "times": 1
+    },
+    "q12h": {
+        "frequencyType": "Hour",
+        "interval": 12,
+        "times": 1
+    },
+    "q13h": {
+        "frequencyType": "Hour",
+        "interval": 13,
+        "times": 1
+    },
+    "q14h": {
+        "frequencyType": "Hour",
+        "interval": 14,
+        "times": 1
+    },
+    "q15h": {
+        "frequencyType": "Hour",
+        "interval": 15,
+        "times": 1
+    },
+    "q16h": {
+        "frequencyType": "Hour",
+        "interval": 16,
+        "times": 1
+    },
+    "q17h": {
+        "frequencyType": "Hour",
+        "interval": 17,
+        "times": 1
+    },
+    "q18h": {
+        "frequencyType": "Hour",
+        "interval": 18,
+        "times": 1
+    },
+    "q19h": {
+        "frequencyType": "Hour",
+        "interval": 19,
+        "times": 1
+    },
+    "q20h": {
+        "frequencyType": "Hour",
+        "interval": 20,
+        "times": 1
+    },
+    "q21h": {
+        "frequencyType": "Hour",
+        "interval": 21,
+        "times": 1
+    },
+    "q22h": {
+        "frequencyType": "Hour",
+        "interval": 22,
+        "times": 1
+    },
+    "q23h": {
+        "frequencyType": "Hour",
+        "interval": 23,
+        "times": 1
+    },
+    "q24h": {
+        "frequencyType": "Hour",
+        "interval": 24,
+        "times": 1
+    },
+    "q1d": {
+        "frequencyType": "Day",
+        "interval": 1,
+        "times": 1
+    },
+    "q2d": {
+        "frequencyType": "Day",
+        "interval": 2,
+        "times": 1
+    },
+    "q3d": {
+        "frequencyType": "Day",
+        "interval": 3,
+        "times": 1
+    },
+    "q4d": {
+        "frequencyType": "Day",
+        "interval": 4,
+        "times": 1
+    },
+    "q5d": {
+        "frequencyType": "Day",
+        "interval": 5,
+        "times": 1
+    },
+    "q6d": {
+        "frequencyType": "Day",
+        "interval": 6,
+        "times": 1
+    },
+    "q7d": {
+        "frequencyType": "Day",
+        "interval": 7,
+        "times": 1
+    },
+    "q8d": {
+        "frequencyType": "Day",
+        "interval": 8,
+        "times": 1
+    },
+    "q9d": {
+        "frequencyType": "Day",
+        "interval": 9,
+        "times": 1
+    },
+    "q10d": {
+        "frequencyType": "Day",
+        "interval": 10,
+        "times": 1
+    },
+    "q11d": {
+        "frequencyType": "Day",
+        "interval": 11,
+        "times": 1
+    },
+    "q12d": {
+        "frequencyType": "Day",
+        "interval": 12,
+        "times": 1
+    },
+    "q13d": {
+        "frequencyType": "Day",
+        "interval": 13,
+        "times": 1
+    },
+    "q14d": {
+        "frequencyType": "Day",
+        "interval": 14,
+        "times": 1
+    },
+    "q15d": {
+        "frequencyType": "Day",
+        "interval": 15,
+        "times": 1
+    },
+    "q16d": {
+        "frequencyType": "Day",
+        "interval": 16,
+        "times": 1
+    },
+    "q17d": {
+        "frequencyType": "Day",
+        "interval": 17,
+        "times": 1
+    },
+    "q18d": {
+        "frequencyType": "Day",
+        "interval": 18,
+        "times": 1
+    },
+    "q19d": {
+        "frequencyType": "Day",
+        "interval": 19,
+        "times": 1
+    },
+    "q20d": {
+        "frequencyType": "Day",
+        "interval": 20,
+        "times": 1
+    },
+    "q21d": {
+        "frequencyType": "Day",
+        "interval": 21,
+        "times": 1
+    },
+    "q22d": {
+        "frequencyType": "Day",
+        "interval": 22,
+        "times": 1
+    },
+    "q23d": {
+        "frequencyType": "Day",
+        "interval": 23,
+        "times": 1
+    },
+    "q24d": {
+        "frequencyType": "Day",
+        "interval": 24,
+        "times": 1
+    },
+    "q25d": {
+        "frequencyType": "Day",
+        "interval": 25,
+        "times": 1
+    },
+    "q26d": {
+        "frequencyType": "Day",
+        "interval": 26,
+        "times": 1
+    },
+    "q27d": {
+        "frequencyType": "Day",
+        "interval": 27,
+        "times": 1
+    },
+    "q28d": {
+        "frequencyType": "Day",
+        "interval": 28,
+        "times": 1
+    },
+    "q29d": {
+        "frequencyType": "Day",
+        "interval": 29,
+        "times": 1
+    },
+    "q30d": {
+        "frequencyType": "Day",
+        "interval": 30,
+        "times": 1
+    },
+    "q31d": {
+        "frequencyType": "Day",
+        "interval": 31,
+        "times": 1
+    },
+    "qd":{
+    "frequencyType": "Day",
+    "interval": 1,
+    "times": 1
+    },
+    "qod": {
+        "frequencyType": "Day",
+        "interval": 2,
+        "times": 1
+    },
+    "bid": {
+        "frequencyType": "Day",
+        "interval": 1,
+        "times": 2
+    },
+    "tid": {
+        "frequencyType": "Day",
+        "interval": 1,
+        "times": 3
+    },
+    "qid": {
+        "frequencyType": "Day",
+        "interval": 1,
+        "times": 4
+    },
+    "qw": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 1
+    },
+    "qwk": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 1
+    },
+    "biw": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 2
+    },
+    "tiw": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 3
+    },
+    "qiw": {
+        "frequencyType": "Week",
+        "interval": 1,
+        "times": 4
+    }
+}
