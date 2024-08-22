@@ -209,9 +209,10 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             interval_text = _get_string_after_keyword(text, "every")
             if len(interval_text) > 0:
                 structured_sig.interval = _get_amount_from_frequency_tags(interval_text)
-            latin_frequency_object = _get_latin_frequency(text)
-            if latin_frequency_object:
-                structured_sig = replace(structured_sig, **latin_frequency_object)
+            latin_frequency_dict = _get_latin_frequency(text)
+            if latin_frequency_dict:
+                # we assume that the latin_frequency_dict values are a dict of frequencyType, interval and times
+                structured_sig = replace(structured_sig, **latin_frequency_dict)
             else:
                 times_text = _get_string_until_keyword(text, "times")
                 structured_sig.times = _get_amount_from_frequency_tags(times_text)
