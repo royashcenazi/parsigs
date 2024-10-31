@@ -13,6 +13,8 @@ from spellchecker import SpellChecker
 import json
 import inflect
 
+from GenericDrugInformation import generic_drug
+
 """
 Represents a structured medication dosage instructions.
 Attributes:
@@ -50,6 +52,7 @@ class StructuredSig:
     times: int
     interval: int = 1
     takeAsNeeded: bool = False
+    generic_data: generic_drug 
 
 
 dose_instructions = ['take', 'inhale', 'instill', 'apply', 'spray', 'swallow']
@@ -58,6 +61,8 @@ number_words = ["one", "two", "three", "four", "five", "six", "seven", "eight", 
 default_model_name = "en_parsigs"
 
 inflect_engine = inflect.engine()
+
+resources_path = Path(__file__).parent / 'resources'
 
 
 def _open_latin_type_dict():  # add parameters path, name
@@ -71,8 +76,7 @@ latin_type_dict = _open_latin_type_dict()
 
 def _create_spell_checker():
     sc = SpellChecker()
-    drug_words_frequency = Path(__file__).parent / 'resources/drug_names.txt'
-    sc.word_frequency.load_text_file(drug_words_frequency)
+    sc.word_frequency.load_text_file(resources_path /'drug_names.txt')
     sc.word_frequency.remove_words(["talbot"])
     return sc
 
@@ -189,7 +193,7 @@ def _to_singular(text):
 
 
 def _create_structured_sig(model_entities, drug=None, form=None):
-    structured_sig = StructuredSig(drug, form, None, None, None, None, None, None)
+    structured_sig = StructuredSig(drug, form, None, None, None, None, None, None, None)
 
     for entity in model_entities:
         text = entity.text
@@ -225,6 +229,10 @@ def _create_structured_sig(model_entities, drug=None, form=None):
             structured_sig.periodAmount = _get_amount_from_frequency_tags(text)
         elif label == 'Strength':
             structured_sig.strength = text
+        
+        #generic drug
+        structured_sig.generic_data = generic_drug(structured_sig.drug,resources_path / 'drug_brands.csv')        
+                
     return structured_sig
 
 
