@@ -11,6 +11,13 @@ class TestParseSigApi(unittest.TestCase):
         expected = StructuredSig(drug=None, form="tablet", strength=None, frequencyType="Day", interval=1, times=3, singleDosageAmount=1.0, periodType='Week', periodAmount=2, takeAsNeeded=False)
         result = self.sig_parser.parse(sig)[0]
         self.assertEqual(result, expected)
+    
+    def test_parse_sig_with_a_instead_of_1(self):
+        sig = "Take a tablet of amoxicillin 500mg every day"
+        expected = StructuredSig(drug="amoxicillin", form="tablet", strength="500mg", frequencyType="Day", interval=1, 
+                                 singleDosageAmount=1.0, periodType=None, periodAmount=None, takeAsNeeded=False)
+        result = self.sig_parser.parse(sig)[0]
+        self.assertEqual(result, expected)
 
     # When there is a mix of times and every, the model does not tag well the frequency
     # Not sure if this is a valid use case (instead of times probably it would be "take 3 tablets every 2 days" but in order
